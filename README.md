@@ -6,4 +6,4 @@ Default vault of a barebones Z2K digital mind
 
 This project is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-You may not use this project or any derivatives for commercial purposes without explicit permission from Z2K.
+You may not use this project or any derivatives for commercial purposes without explicit permission from Z2K Studios.
