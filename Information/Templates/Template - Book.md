@@ -13,7 +13,7 @@ z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle
 
 ---
 # Personal Relevance
-- **Personal Library Location**:: {{PersonalLocation|text|Where or how is this book stored?|Audible, Kindle, Physical, Public Library| |}}
+- **Personal Library Location**:: {{PersonalLocation|multiSelect:Audible, Kindle, Physical, Public Library|Where or how is this book stored?}}
 - **Recommended By**:: {{wikilink RecommendedBy}}
 - **Read With**:: {{wikilink ReadWith}}
 - **When, Where and Why I Acquired This Book**:: {{WWW|text|When, Where and Why I acquired this book?}}
@@ -27,7 +27,7 @@ z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle
 - **Publish Date**:: {{wikilink ArticleDate}}
 - **ASIN**:: [{{asin}}]({{appBookLink}})
 - **Full Source Material URL**:: {{BookURL}}
-- **Medium**:: {{BookMedium|multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online|What medium is the book stored in within your Library?|#Media/Book/PhysicalBook}}
+- **Medium**:: {{BookMedium|multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None|What medium is the book stored in within your Library?|#Media/Book/PhysicalBook}}
 
 ---
 {{> Partial - Information - 3 - Synthesis Section}}
@@ -38,11 +38,11 @@ z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle
 
 ---
 # Details
-%% Delve into the details here. Use WriterTags hashtags:  
+{{! Delve into the details here. Use WriterTags hashtags:  
    - #WriterTags/BeautifulLanguage - word choices that really strike a cord
    - #WriterTags/ExternalQuotes - quotes of *other* authors made by the author (could be useful in figuring out what else to read or explore)
    - #WriterTags/Abstractions - when an author makes a broader statement
-%%
+}}
 {{FurtherDetails}}
 {{sourceData}}
 
