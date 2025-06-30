@@ -1,0 +1,23 @@
+# Z2K Metadata 
+# ==============================================================
+
+# Z2K Metadata -------------------------------------------------
+z2k_metadata_version:              3.00
+z2k_metadata_variant:              "barebones"
+z2k_metadata_copyright:            "Z2K Metadata structure is © 2025 Z2K Studios, LLC"
+z2k_metadata_reference:            "https://z2ksystem.com/specs/v3.0"
+
+# Z2K Creation Metadata ----------------------------------------
+z2k_creation_creator:              "{{wikilink creatorName}}"
+z2k_creation_date:                 "{{wikilink today}}"
+z2k_creation_timestamp:            "{{timestamp}}"
+z2k_creation_template:             "{{wikilink templateName}}"
+z2k_creation_domain:               ".:Z2K/Domain/{{normalizePath destPath}}"
+
+# Z2K Card Properties ------------------------------------------
+z2k_card_build_state:              ".:Z2K/BuildState/Uninitialized" 
+z2k_card_status:                   ".:Z2K/Status/Ongoing"
+z2k_card_source_type:              ".:Z2K/SourceType/Unknown"
+
+
+
