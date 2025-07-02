@@ -5,7 +5,23 @@ z2k_card_type:                     ".:Z2K/CardType/Atom"
 z2k_card_source_type:              ".:Z2K/SourceType/Book"
 z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle}} - {{format-string-file-friendly AuthorName}}"
 
+# Z2K Card Properties from Template File -----------------------
+# The following YAML properties store away template fields so they can be access through database tools and subsequent partials
+BookAuthor:   "{{AuthorName}}" 
+BookTitle:    "{{BookBriefTitle}}" 
+Author:       "{{AuthorName}}" 
+Title:        "{{BookBriefTitle}}" 
+
 ---
+{{! Z2K Templates - Field Definitions --------------------------------------------------------------- }}
+{{! The following field definitions specify more complex prompting information for fields}}
+{{~no-output AuthorName "text" "Enter the name of the author (without wikilinks):" "Walt Whitman"}}
+{{~no-output BookBriefTitle "text" "Enter a brief version of the book title (to be used in the card title):"}}
+{{~no-output BookFullTitle  "text" "Enter the full title from the source material:" "{{ArticleBriefTitle}}" "{{ArticleBriefTitle}}"}}
+{{~no-output PersonalLocation "multiSelect:Audible, Kindle, Physical, Public Library" "Where or how is this book stored?"}}
+{{~no-output WhereWhenWhy "text" "When, Where and Why I acquired this book?"}}
+{{~no-output BookMedium "multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None" "|"What medium is the book stored in within your Library?" "#Media/Book/PhysicalBook"}}
+{{~}}
 {{> Partial - Information - 1 - Summary Section}}
 
 ---
@@ -13,21 +29,21 @@ z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle
 
 ---
 # Personal Relevance
-- **Personal Library Location**:: {{PersonalLocation|multiSelect:Audible, Kindle, Physical, Public Library|Where or how is this book stored?}}
+- **Personal Library Location**:: {{PersonalLocation}}
 - **Recommended By**:: {{wikilink RecommendedBy}}
 - **Read With**:: {{wikilink ReadWith}}
-- **When, Where and Why I Acquired This Book**:: {{WWW|text|When, Where and Why I acquired this book?}}
+- **When, Where and Why I Acquired This Book**:: {{WhereWhenWhy}}
 
 
 # Citation
-- **Book Title**:: {{BookBriefTitle|text|Enter a brief version of the book title (to be used in the card title)}}
-- **Book Full Title**:: {{BookFullTitle|text|Enter the full title from the source material|{{ArticleBriefTitle}}|{{ArticleBriefTitle}}}}
+- **Book Title**:: {{BookBriefTitle}}
+- **Book Full Title**:: {{BookFullTitle}}
 - **Author**:: {{wikilink AuthorName}}
 - **Citation**:: {{Citation}}
 - **Publish Date**:: {{wikilink ArticleDate}}
 - **ASIN**:: [{{asin}}]({{appBookLink}})
 - **Full Source Material URL**:: {{BookURL}}
-- **Medium**:: {{BookMedium|multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None|What medium is the book stored in within your Library?|#Media/Book/PhysicalBook}}
+- **Medium**:: {{BookMedium}}
 
 ---
 {{> Partial - Information - 3 - Synthesis Section}}
