@@ -1,0 +1,3 @@
+# Z2K Card Properties - Information Cards ----------------------
+z2k_creation_domain:               ".:Z2K/Domain/Information" # Overrides the default - is this allowed?
+z2k_card_perspective:              ".:Z2K/Perspective/UserMind"
