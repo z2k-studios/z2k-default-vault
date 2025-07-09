@@ -7,20 +7,19 @@ z2k_template_default_title:        "{{format-string-file-friendly BookBriefTitle
 
 # Z2K Card Properties from Template File -----------------------
 # The following YAML properties store away template fields so they can be access through database tools and subsequent partials
-BookAuthor:   "{{AuthorName}}" 
-BookTitle:    "{{BookBriefTitle}}" 
-Author:       "{{AuthorName}}" 
-Title:        "{{BookBriefTitle}}" 
+Author:          "{{Author}}" 
+Title:           "{{Title}}" 
+FullTitle:       "{{FullTitle}}" 
 
 ---
 {{! Z2K Templates - Field Definitions --------------------------------------------------------------- }}
 {{! The following field definitions specify more complex prompting information for fields}}
-{{~no-output AuthorName "text" "Enter the name of the author (without wikilinks):" "Walt Whitman"}}
-{{~no-output BookBriefTitle "text" "Enter a brief version of the book title (to be used in the card title):"}}
-{{~no-output BookFullTitle  "text" "Enter the full title from the source material:" "{{ArticleBriefTitle}}" "{{ArticleBriefTitle}}"}}
-{{~no-output PersonalLocation "multiSelect:Audible, Kindle, Physical, Public Library" "Where or how is this book stored?"}}
-{{~no-output WhereWhenWhy "text" "When, Where and Why I acquired this book?"}}
-{{~no-output BookMedium "multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None" "|"What medium is the book stored in within your Library?" "#Media/Book/PhysicalBook"}}
+{{~no-output Author            "text" "Enter the name of the author (without wikilinks):" "Walt Whitman"}}
+{{~no-output Title             "text" "Enter a brief version of the book title (to be used in the card title):"}}
+{{~no-output FullTitle         "text" "Enter the full title of the book:" "{{Title}}" "{{Title}}"}}
+{{~no-output PersonalLocation  "multiSelect:Audible, Kindle, Physical, Public Library" "Where or how is this book stored?"}}
+{{~no-output WhereWhenWhy      "text" "When, Where and Why I acquired this book?"}}
+{{~no-output BookMedium        "multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None" "|"What medium is the book stored in within your Library?" "#Media/Book/PhysicalBook"}}
 {{~}}
 {{> Partial - Information - 1 - Summary Section}}
 
@@ -36,9 +35,9 @@ Title:        "{{BookBriefTitle}}"
 
 
 # Citation
-- **Book Title**:: {{BookBriefTitle}}
-- **Book Full Title**:: {{BookFullTitle}}
-- **Author**:: {{wikilink AuthorName}}
+- **Book Title**:: {{Title}}
+- **Book Full Title**:: {{FullTitle}}
+- **Author**:: {{wikilink Author}}
 - **Citation**:: {{Citation}}
 - **Publish Date**:: {{wikilink ArticleDate}}
 - **ASIN**:: [{{asin}}]({{appBookLink}})
@@ -64,22 +63,11 @@ Title:        "{{BookBriefTitle}}"
 
 ---
 # Key Excerpts
-{{! Insert a series of excerpts from the paper here. Be sure to either group with headers (as below) or add a ^ at the end of each quote to enable block quoting from other cards.}}
+{{! Insert a series of excerpts from the paper here. Be sure to either group with named headers (as below) or add a ^ at the end of each quote to enable block quoting from other cards.}}
+{{! Use the Partial "Partial - Quotation" to insert additional quotations from the book.}}
 
-## Quote1Summary
-> {{Quote1}}
+## {{QuotationName}}
+> {{Quotation}}
 
-- {{Quote1Takeaways}}
-
-
-## Quote2Summary
-> {{Quote2}}
-
-- {{Quote2Takeaways}}
-
-
-## QuoteNSummary
-> {{QuoteN}}
-
-- {{QuoteNTakeaways}}
+- {{QuotationTakeaways}}
 

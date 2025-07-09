@@ -1,0 +1,4 @@
+## {{QuotationName}}
+> {{Quotation}}
+
+- {{QuotationTakeaways}}

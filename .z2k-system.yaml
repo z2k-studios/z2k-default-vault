@@ -13,6 +13,7 @@ z2k_creation_date:                 "{{wikilink today}}"
 z2k_creation_timestamp:            "{{timestamp}}"
 z2k_creation_template:             "{{wikilink templateName}}"
 z2k_creation_domain:               ".:Z2K/Domain/{{normalizePath destPath}}"
+z2k_creation_language:             "en"
 
 # Z2K Card Properties ------------------------------------------
 z2k_card_build_state:              ".:Z2K/BuildState/Uninitialized" 
