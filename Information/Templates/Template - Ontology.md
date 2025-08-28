@@ -5,10 +5,10 @@ z2k_card_type:                     ".:Z2K/CardType/Structure/Ontology"
 z2k_card_source_type:              ".:Z2K/SourceType/OtherCards"
 
 ---
-{{> Partial - Information - 1 - Summary Section}}
+{{> "Partial - Information - 1 - Summary Section"}}
 
 ---
-{{> Partial - Information - 2 - Overview Section}}
+{{> "Partial - Information - 2 - Overview Section"}}
 
 ---
 
