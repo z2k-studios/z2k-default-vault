@@ -13,8 +13,9 @@ FullTitle:          "{{FullTitle}}"
 PublicationName:    "{{PublicationName}}"
 
 ---
+```
 {{! Z2K Templates - Field Definitions --------------------------------------------------------------- }}
-{{! The following field definitions specify more complex prompting information for fields}}
+{{! The following field definitions specify more complex prompting information for fields }}
 {{~prompt-info Title             "text" "Enter a brief version of the article title (to be used in the card title):" "Self-Reliance" "Unnamed Article"}}
 {{~prompt-info FullTitle         "text" "Enter the full title from the source material:" "{{Title}}" "{{Title}}"}}
 {{~prompt-info Author            "text" "Enter the name of the Author:" "Ralph Waldo Emerson" "Unknown Author"}}
@@ -28,7 +29,7 @@ PublicationName:    "{{PublicationName}}"
 
 ---
 # Citation
-- Article Title:: {{Title}}
+- Article Title:: {{prompt-field Title description="Enter Title Here"}}
 - Article Full Title:: {{FullTitle}}
 - Author:: {{wikilink (format-string-file-friendly Author)}}
 - Citation:: {{Citation}}
