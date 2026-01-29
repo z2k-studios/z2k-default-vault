@@ -22,10 +22,10 @@ PublicationName:    "{{PublicationName}}"
 {{~prompt-info PublicationName   "text" "What publication published this article?" "The Atlantic" ""}}
 {{~prompt-info ArticleMedium     "multiSelect:#Media/Magazine,#Media/Web,#Media/News,#Media/Journal" "What medium is the article published in?" "#Media/Magazine" ""}}
 {{~!~}}
-{{> "Partial - Information - 1 - Summary Section"}}
+{{> "Block - Information - 1 - Summary Section"}}
 
 ---
-{{> "Partial - Information - 2 - Overview Section"}}
+{{> "Block - Information - 2 - Overview Section"}}
 
 ---
 # Citation
@@ -39,7 +39,7 @@ PublicationName:    "{{PublicationName}}"
 - Full Source Material URL:: {{URL}}
 
 ---
-{{> "Partial - Information - 3 - Synthesis Section"}}
+{{> "Block - Information - 3 - Synthesis Section"}}
 
 ---
 # General Notes
