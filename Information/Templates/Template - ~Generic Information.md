@@ -5,11 +5,12 @@ z2k_card_type:                     ".:Z2K/CardType/Atom"
 z2k_card_source_type:              ".:Z2K/SourceType/Unknown"
 
 ---
-{{> "Partial - Information - 1 - Summary Section"}}
+{{> "Block - Information - 1 - Summary Section"}}
 
 ---
-{{> "Partial - Information - 2 - Overview Section"}}
+{{> "Block - Information - 2 - Overview Section"}}
 
 ---
-{{> "Partial - Information - 4 - Details Section"}}
+{{> "Block - Information - 4 - Details Section"}}
+
 

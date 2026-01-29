@@ -16,10 +16,10 @@ FullTitle: "{{FullTitle}}"
 {{~prompt-info WhereWhenWhy      "text" "When, Where and Why I acquired this book?"}}
 {{~prompt-info BookMedium        "multiSelect:#Media/Book/PhysicalBook,#Media/Book/Kindle,#Media/Book/PDF,#Media/Book/Online,None" "What medium is the book stored in within your Library?" "#Media/Book/PhysicalBook"}}
 {{~!~}}
-{{> "Partial - Information - 1 - Summary Section"}}
+{{> "Block - Information - 1 - Summary Section"}}
 
 ---
-{{> "Partial - Information - 2 - Overview Section"}}
+{{> "Block - Information - 2 - Overview Section"}}
 
 ---
 # Personal Relevance
@@ -35,16 +35,16 @@ FullTitle: "{{FullTitle}}"
 - **Author**:: {{wikilink Author}}
 - **Citation**:: {{Citation}}
 - **Publish Date**:: {{wikilink ArticleDate}}
-- **ASIN**:: [{{Asin}}]({{AppBookLink}})
+- **ASIN**:: [{{Asin}}]({{AppBookLink}}) ==USE HELPER FOR URL CONSTRUCTION!==
 - **Full Source Material URL**:: {{BookURL}}
 - **Medium**:: {{BookMedium}}
 
 ---
-{{> "Partial - Information - 3 - Synthesis Section"}}
+{{> "Block - Information - 3 - Synthesis Section"}}
 
 ---
 # Questions To Ask the Author
-%% Insert any questions you would want to ask the author and flag them with \#Questions/ToAsk/Author . Reminder - this helps you operate in Synthesis mode. %%
+{{! Insert any questions you would want to ask the author and flag them with \#Questions/ToAsk/Author . Reminder - this helps you operate in Synthesis mode. }}
 
 ---
 # Details
@@ -59,10 +59,6 @@ FullTitle: "{{FullTitle}}"
 ---
 # Key Excerpts
 {{! Insert a series of excerpts from the paper here. Be sure to either group with named headers (as below) or add a ^ at the end of each quote to enable block quoting from other cards.}}
-{{! Use the Partial "Partial - Quotation" to insert additional quotations from the book.}}
+{{! Use the block "Block - Quotation" to insert additional quotations from the book.}}
 
-## {{QuotationName}}
-> {{Quotation}}
-
-- {{QuotationTakeaways}}
-
+{{> "Block - Quotation"}}
