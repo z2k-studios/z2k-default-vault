@@ -1,13 +1,8 @@
 ---
 document_type: Project Requirements
-status: Draft
+status: Locked
 ---
 # Project Requirements — Z2K Template Library v3 Migration
-
-> This document is the canonical consolidation of all decisions made in the following source documents, now archived at:
-> - `User Feedback Documentation/Archived/Z2K v2 to v3 Migration Plan.md`
-> - `User Feedback Documentation/Archived/Template Migration - v2 to v3 - Open Questions.md`
-> - `User Feedback Documentation/Archived/Template Library - System Architecture - Open Questions.md`
 
 ---
 
@@ -17,10 +12,11 @@ status: Draft
 - **v3**: New template system using Z2K Templates Plugin
 - **System Block**: `.system-block.md` — injects YAML frontmatter into all cards created in its folder tree
 - **Document Template**: `Template - <Name>.md` — creates content notes; user is prompted for fields at instantiation
-- **Block Template**: `Block - <Name>.block` — reusable partial inserted via `{{> BlockName}}`
+- **Block Template**: `<Name>.md` — reusable partial inserted via `{{> BlockName}}`
 - **Instantiation**: Creating a content file from a template; prompts user for field values
 - **Finalization**: Resolving all remaining fields and stripping template markup
 - **WIP**: Work-In-Progress — a content file with unresolved fields awaiting completion
+- **The terms Requirements and Features are used interchangeably throughout this document.** Both terms refer to the same underlying items — requirements from a project management perspective, features from a user perspective.
 
 ---
 
@@ -35,7 +31,7 @@ Every requirement in this document carries an importance level:
 | **Medium** | Meaningful enhancement; implement if priority permits within the IF cycle. |
 | **Low** | Nice-to-have; defer to a future IF iteration or successor project if needed. |
 
-> **Note:** Importance levels will be assigned to individual requirements during Phase 2 execution as part of the IF punch-through prioritization process. This schema is established here so the assignment process has a consistent vocabulary.
+> Importance levels are assigned to all requirements in this document. Each REQ-* item carries an explicit level; unnumbered specification sections carry a section-level importance note.
 
 ---
 
@@ -47,7 +43,7 @@ Every requirement in this document carries an importance level:
 
 ---
 
-## 2.5 Bootstrapping and Tool Reliability
+## 2.5 Bootstrapping, Dependencies, and Tool Reliability
 
 This project dogfoods tools that are themselves in active development. The following governs how to treat each tool:
 
@@ -60,7 +56,7 @@ This project dogfoods tools that are themselves in active development. The follo
 - All bugs are tracked per §21 (Bug and Issue Tracking).
 
 ### Z2K System Documentation
-- The Z2K System Documentation (`Docs/z2k-system-docs/`) is **not reliable**. It is a mix of ZSv1 and ZSv2 content and is incomplete.
+- The Z2K System Documentation (`Docs/z2k-system-docs/`) is **not reliable**. It is a mix of ZSv1 and ZSv2 content and is also incomplete.
 - Only the **top-level domain list** has been updated for ZSv3.
 - Do not use Z2K System Documentation as an authority for v3 behavior unless explicitly directed.
 
@@ -88,8 +84,9 @@ Every migrated template must apply all of the following changes:
 | `z2k_card_build_state: ...` | **Removed from system-blocks** |
 | `normalizePath destPath` helper | **Not used** — hard-code domain values per domain instead |
 | `%% Title: ... %%` comment | `z2k_template_suggested_title: "..."` in YAML |
-| `%% ... %%` comments | `{{! ... }}` Handlebars comments |
-| `G:` personal prefix (multi-line context) | `> [!me]` callout block |
+| `%% ... %%` comments | Preserve as is, do not use handlebars comments  |
+| `G:` personal prefix (multi-line context when at indentation level 0 or 1 ) | `> [!me]` callout block |
+| `G:` personal prefix (multi-line context when at indentation level > 1 ) | `Me:` qualifier |
 | `G:` personal prefix (inline single-line) | `Me:` inline prefix |
 
 ---
@@ -97,51 +94,77 @@ Every migrated template must apply all of the following changes:
 ## 4. Naming and Metadata Standards
 
 ### REQ-NM-001 — Document Template Naming
-All document templates: `Template - <Name>.md`
+**Importance:** Critical
+- All document templates: `<Name>.md` — no `Template -` prefix.
+- Files reside in dedicated `Templates/` subfolders, which serve as the type indicator.
+- The folder location is sufficient to identify them as templates.
+- Avoid name collision with other templates (and what would be envisioned for a fully populated second brain vault)
+- **Default domain templates** (the general-purpose fallback for a domain) use the pattern `<Name> (General).md`. The name is typically the domain name or primary card type for that domain (e.g., `Thoughts (General).md`, `Contact (General).md`). This postfix acts as the domain's default template workaround until GH issue #182 (Default Template feature) is implemented in the Z2K Templates Plugin.
 
 ### REQ-NM-002 — Block Template Naming
-All block templates: `Block - <Name>.block` or `Block - <Name>.md` where `.block` is impractical.
+**Importance:** Critical
+All block templates: `<Name>.md` — no `Block -` prefix. Same rationale as REQ-NM-001.
+
+> **Note:** Template and block names in §10 and §11 mapping tables reflect this convention (no prefix). All IP task target filenames will be updated to match during Phase 3 re-entry.
 
 ### REQ-NM-003 — System Block Naming
+**Importance:** Critical
 All system blocks: `.system-block.md` (dot-prefixed, hidden file in domain or vault root)
 
 ### REQ-NM-004 — Template Version
+**Importance:** Critical
 All migrated and new templates: `z2k_template_version: "v3.0.0 2026-03-02"`
 
 ### REQ-NM-005 — Template Author
+**Importance:** Critical
 - Official library templates: `z2k_template_author: "Z2K Studios, LLC"`
 - Personal-specific templates (hardcoded names, personal orgs): `z2k_template_author: "Geoff (z2k-gwp)"`
 
 ### REQ-NM-006 — Metadata Version
+**Importance:** Critical
 All content templates: `z2k_metadata_version: 3.00`
 
 ### REQ-NM-007 — Template Type in YAML
+**Importance:** Critical
 - Document templates: `z2k_template_type: document-template`
 - Block templates: `z2k_template_type: block-template`
 
 ### REQ-NM-008 — Suggested Title
-Every document template includes `z2k_template_suggested_title`. Use v2 `%% Title: %%` comments as source; derive sensibly from primary fields if no prior title comment exists.
+**Importance:** High
+Every document template includes `z2k_template_suggested_title`. 
+- Use v2 `%% Title: %%` comments as source
+- Derive sensibly from primary fields if no prior title comment exists.
+- For templates with dates, have the date be preceeding (e.g. `{{today}} - Meeting with {{Person}})
 
 ### REQ-NM-009 — Field Name Consistency
-During migration, review and rationalize user-defined field names for consistency across templates. Fields representing the same concept across different templates must use the same name. Favor the most common existing v2 name as the canonical form; where v2 is inconsistent, choose the clearest name and apply it uniformly. Significant renames should be noted in the relevant task. Examples of cross-template fields requiring consistent naming: `Author`, `Date`, `Location`, `Title`, `Source`, `URL`, `Tags`.
+**Importance:** High
+During migration, review and rationalize user-defined field names for consistency across templates. Fields representing the same concept across different templates must use the same name. Favor the most common existing v2 name as the canonical form; where v2 is inconsistent, choose the clearest name and apply it uniformly. Significant renames should be noted in the relevant task. Examples of cross-template fields requiring consistent naming: `Author`, `Location`, `Title`, `Source`, `URL`, `Tags`.
+- Use `{{today}}`to access the current date instead of `{{Date}}` as it is an obsidian defined field (see Z2K Templates `reference-manual/Built-In Fields/Built-In Fields - Date and Time/today`)
+- Use `{{EventDate}}` to specify a user specified date. Provide a fieldInfo with a `suggest` of `{{now}}` if appropriate.
+- Follow the naming conventions from Z2K Templates: see `reference-manual/Naming Conventions/Naming Fields`
 
 ---
 
 ## 5. Vault Structure Requirements
 
 ### REQ-VS-001 — Missing Domain Folders
+**Importance:** Critical
 Create: `Body/`, `Body/Templates/`, `AI/`, `AI/Templates/`
 
 ### REQ-VS-002 — System Templates Subfolder
+**Importance:** Critical
 `System/` exists; `System/Templates/` is missing. Create it.
 
 ### REQ-VS-003 — My Writings Subfolder
+**Importance:** Critical
 Create `Projects/My Writings/` and `Projects/My Writings/Templates/`.
 
 ### REQ-VS-004 — Root Templates Folder
+**Importance:** Critical
 Create `Templates/` at vault root for cross-domain block partials and the generic card template.
 
 ### REQ-VS-005 — Existing Domain Subfolders
+**Importance:** High
 Audit all existing domains. Create `Templates/` subfolder in any domain missing it.
 
 ---
@@ -150,26 +173,31 @@ Audit all existing domains. Create `Templates/` subfolder in any domain missing 
 
 File: `Data/Vaults/z2k-default-vault/.system-block.md`
 
-**Current state (as of 2026-03-02):** Partially v3. Already has `z2k_metadata_copyright`, `z2k_metadata_reference`, `z2k_creation_creator`, `z2k_creation_date`, `z2k_creation_timestamp`, `z2k_creation_template`, `z2k_creation_language`. Still has `z2k_card_build_state`, `z2k_card_status`, and `normalizePath` usage that must be corrected.
+**Current state (as of 2026-03-02):** Partially v3. Already has `z2k_metadata_copyright`, `z2k_metadata_reference`, `z2k_creation_creator`, `z2k_creation_date`, `z2k_creation_timestamp`, `z2k_creation_template`, `z2k_creation_language`. Still has `z2k_card_build_state`, `z2k_card_status`, and `normalizePath` usage that must be corrected. Do not assume the existing file is reflective of what it should be.
 
 ### REQ-RSB-001 — Remove Deprecated Fields
+**Importance:** Critical
 Remove: `z2k_card_build_state`, `z2k_card_status` (from root system-block)
 
 ### REQ-RSB-002 — Fix z2k_creation_domain
+**Importance:** Critical
 Remove `z2k_creation_domain` from the root system-block entirely (it uses the unsupported `normalizePath` helper). The field will be set per-domain in each domain's system-block. The root system-block should not set a domain value.
 
 ### REQ-RSB-003 — Library Version Field
+**Importance:** High
 Add: `z2k_creation_library_version: "3.0.0"`
 - Field name follows `z2k_creation_*` prefix pattern: captures library version AT TIME OF CARD CREATION (static, like `z2k_creation_domain`)
 - This is not the current library version — it is a snapshot of what version the library was when this card was created
 
 ### REQ-RSB-004 — Me Field
+**Importance:** High
 Add: `{{fieldInfo me value="me"}}`
 - Sets the `me` field to the fixed literal string `"me"` for use in `[!me]` callout types
 - This is version 3's pragmatic resolution: `[!me]` as a standardized, portable callout type
 - Future: Core Plugin will expose `{{me}}` as a built-in that resolves to user's configured display name
 
 ### REQ-RSB-005 — Fields to Retain (unchanged)
+**Importance:** Critical
 - `z2k_metadata_version: 3.00`
 - `z2k_metadata_variant: "barebones"`
 - `z2k_metadata_copyright: "Z2K Metadata structure is © 2025 Z2K Studios, LLC"`
@@ -180,17 +208,15 @@ Add: `{{fieldInfo me value="me"}}`
 - `z2k_creation_template: "{{wikilink templateName}}"`
 - `z2k_creation_language: "en"`
 - `z2k_card_source_type: ".:Z2K/SourceType/Unknown"` (root default; overridden per template)
-- `z2k_card_status: ".:Z2K/Status/Ongoing"` — **NOTE: keep this in root system-block for content files** (the deprecated one is the `z2k_card_status: Template` value in *template files* — that is removed; the content file default `Ongoing` stays)
-
-> ⚠️ OPEN ISSUE (RSB-001): Confirm intended behavior of `z2k_card_status` in the root system-block. Current value is `.:Z2K/Status/Ongoing` which applies to all content files. The decision to remove `z2k_card_status` from templates referred to the *Template* status value, not the content-file default. Verify this is correct before Phase 2 execution.
 
 ---
 
 ## 7. Domain System Block Requirements
 
-One `.system-block.md` per domain, in the domain root folder.
+One `.system-block.md` per domain, one in the domain root folder.
 
 ### REQ-DSB-001 — z2k_creation_domain (all domains)
+**Importance:** Critical
 Every domain system-block sets `z2k_creation_domain` to the domain's canonical path:
 
 | Domain | Value |
@@ -210,6 +236,7 @@ Every domain system-block sets `z2k_creation_domain` to the domain's canonical p
 | System | `.:Z2K/Domain/System` |
 
 ### REQ-DSB-002 — Ratings Fields (selective domains)
+**Importance:** High
 Include in system-blocks for: **Information, Thoughts, Memories, Beliefs**
 
 Fields (cannot be in block templates — blocks cannot be injected into YAML):
@@ -220,13 +247,16 @@ z2k_rating_passion:      ""
 ```
 
 ### REQ-DSB-003 — Privacy Fields (Journals, Logs)
+**Importance:** High
 - Journals system-block: `z2k_card_privacy: ".:Z2K/Privacy/Private/Journal"`
 - Logs system-block: `z2k_card_privacy: ".:Z2K/Privacy/Private/Log"`
 
 ### REQ-DSB-004 — AI Domain Authorship
+**Importance:** Medium
 AI domain system-block must express that the default authorship perspective is AI, not the vault owner. Implement as a field comment or dedicated field indicating AI-originated content.
 
 ### REQ-DSB-005 — Projects System Block Stop
+**Importance:** High
 - Goal: project cards in `Projects/` subfolders should not inherit `z2k_*` fields from root system-block
 - Mechanism: System Block Stop files in project subdirectories
 - Project cards use a completely different YAML structure without `z2k_*` fields
@@ -237,6 +267,7 @@ AI domain system-block must express that the default authorship perspective is A
 ---
 
 ## 8. Privacy Canonical Values
+**Importance:** Critical
 
 The following is the complete canonical set of `z2k_card_privacy` values. All values must appear in at least one template so Obsidian Properties panel can discover them for dropdown auto-complete:
 
@@ -261,6 +292,7 @@ The following is the complete canonical set of `z2k_card_privacy` values. All va
 ---
 
 ## 9. Source Type (z2k_card_source_type)
+**Importance:** High
 
 `z2k_card_source_type` is hard-coded per-template. Root system-block provides `.:Z2K/SourceType/Unknown` as the default fallback.
 
@@ -288,34 +320,39 @@ Known v2 values (to be confirmed against Metadata Specification v3.0):
 ### 10.1 Root-Level Blocks (in `Templates/`)
 
 #### REQ-BLK-001 — Block - Card Fabric
-- File: `Templates/Block - Card Fabric.block`
+**Importance:** High
+- File: `Templates/Card Fabric.md`
 - Fields: `Fabric.MentalModel`, `Fabric.Contextual`, `Fabric.Reference`, `Fabric.GeoContext`
   - Dot-notation is speculative for prompted user fields. If unsupported: use `FabricMentalModel`, `FabricContextual`, etc.
 - Use `{{formatStringBulletize}}` so section headers only appear when field has content
 - Build both a YAML array version and a markdown body version
-- Card Fabric is an **opt-in partial** (explicit `{{> "Block - Card Fabric"}}` insertion) — never system-block injected
+- Card Fabric is an **opt-in partial** (explicit `{{> "Card Fabric"}}` insertion) — never system-block injected
 
 > ⚠️ OPEN ISSUE (BLK-001): `Fabric.MentalModel` dot-notation for prompted fields is untested. Test at the start of Phase 4. If unsupported, use flat names and file a plugin bug report.
 
 #### REQ-BLK-002 — Block - Extended YAML
-- File: `Templates/Block - Extended YAML.block`
+**Importance:** Medium
+- File: `Templates/Extended YAML.md`
 - Optional maximalist YAML fields: privacy, projects, structures, ratings, fabric arrays
 - User manually inserts this block; never auto-injected
 
 #### REQ-BLK-003 — Block - Perspective - Me
-- File: `Templates/Block - Perspective - Me.block`
+**Importance:** High
+- File: `Templates/Perspective - Me.md`
 - Standard `[!me]` callout block template for vault-owner perspective sections
 - Uses fixed literal `me` as callout type (not `{{me}}` field in v3)
 
 #### REQ-BLK-004 — Block - Quotation
-- File: `Templates/Block - Quotation.block`
+**Importance:** High
+- File: `Templates/Quotation.md`
 - Fields: `Content.Author`, `Content.Title`, `Content.Text`
 - Namespace `Content.*` distinguishes from the card's own `Author` and `Title` fields
 - Fallback flat names: `ContentAuthor`, `ContentTitle`, `ContentText`
 - Field names must be **consistent** between Quotation and Citation blocks so YAML pre-fill works when inserting either block into a card that already has `Content.*` data
 
 #### REQ-BLK-005 — Block - Citation
-- File: `Templates/Block - Citation.block`
+**Importance:** High
+- File: `Templates/Citation.md`
 - Fields: `Content.Author`, `Content.Title`, `Content.Source`, `Content.URL`, `Content.Date`
 - Same `Content.*` namespace as Quotation block (identical field names where they overlap)
 
@@ -324,33 +361,41 @@ Known v2 values (to be confirmed against Metadata Specification v3.0):
 ### 10.2 Domain-Level Blocks
 
 #### REQ-BLK-010 — Block - Podcast Interview Content (Information)
-- File: `Information/Templates/Block - Podcast Interview Content.block`
+**Importance:** High
+- File: `Information/Templates/Podcast Interview Content.md`
 - Core content structure for all podcast interview cards (Key Quotes, Key Takeaways, Summary, Background, etc.)
-- Architecture (Option 3): host-specific document templates preset host/show field values BEFORE the block inclusion via `{{> "Block - Podcast Interview Content"}}`. The block contains generic structure only.
+- Architecture (Option 3): host-specific document templates preset host/show field values BEFORE the block inclusion via `{{> "Podcast Interview Content"}}`. The block contains generic structure only.
 - Example: `Template - Podcast Interview - Lex Fridman.md` sets `{{fieldInfo Host value="Lex Fridman"}}`, `{{fieldInfo ShowName value="Lex Fridman Podcast"}}`, then includes the block
 
 #### REQ-BLK-011 — Block - Information - Summary (Information)
-File: `Information/Templates/Block - Information - Summary.block`
+**Importance:** Medium
+File: `Information/Templates/Information - Summary.md`
 
 #### REQ-BLK-012 — Block - Information - Overview (Information)
-File: `Information/Templates/Block - Information - Overview.block`
+**Importance:** Medium
+File: `Information/Templates/Information - Overview.md`
 
 #### REQ-BLK-013 — Block - Information - Synthesis (Information)
-File: `Information/Templates/Block - Information - Synthesis.block`
+**Importance:** Medium
+File: `Information/Templates/Information - Synthesis.md`
 
 #### REQ-BLK-014 — Block - Information - Details (Information)
-File: `Information/Templates/Block - Information - Details.block`
+**Importance:** Medium
+File: `Information/Templates/Information - Details.md`
 
 #### REQ-BLK-015 — Block - Logistics (Interactions)
-- File: `Interactions/Templates/Block - Logistics.block`
+**Importance:** High
+- File: `Interactions/Templates/Logistics.md`
 - When/Where/Who/Recorded section common across interaction cards
 
 #### REQ-BLK-016 — Block - When Where Who (Memories)
-- File: `Memories/Templates/Block - When Where Who.block`
+**Importance:** High
+- File: `Memories/Templates/When Where Who.md`
 - Context anchor section (date, location, who was present) common across memory cards
 
 #### REQ-BLK-017 — Block - Health Log (Body)
-- File: `Body/Templates/Block - Health Log.block`
+**Importance:** High
+- File: `Body/Templates/Health Log.md`
 - Migrated from `~Partial - Health Log.md` (v2)
 - All Flame-style automation fields preserved exactly as-is
 - Future plan: split into individual sub-blocks composed by a parent block (out of scope for this project)
@@ -358,6 +403,7 @@ File: `Information/Templates/Block - Information - Details.block`
 ---
 
 ## 11. Document Template Requirements
+**Section Importance:** Critical — these are the primary deliverable of the project.
 
 ### 11.1 Universal Standards (all document templates)
 - `z2k_template_type: document-template`
@@ -366,14 +412,14 @@ File: `Information/Templates/Block - Information - Details.block`
 - `z2k_template_suggested_title` expression present
 - `{{fieldInfo}}` declarations for all user-defined fields
 - `%% ... %%` comments converted to `{{! ... }}`
-- Card Fabric section replaced with: `{{! To include Card Fabric: {{> "Block - Card Fabric"}} }}`
+- Card Fabric section replaced with: `{{! To include Card Fabric: {{> "Card Fabric"}} }}`
 - `G:` prefix converted: multi-line → `> [!me]`, inline → `Me:`
-- No v2 Templater syntax (`<% ... %>` or Templater-specific helpers)
+- **Templater syntax handling:** Templater code (`<% ... %>`) must only be replaced when a clear v3 equivalent exists. Code that cannot be cleanly converted must be **preserved verbatim** and **flagged** with a `{{! FLAGGED: ... }}` comment explaining what it does. Do not guess — preserve-and-flag is always preferred over an incorrect conversion.
 
 ### 11.2 Thoughts Domain (`Thoughts/Templates/`)
 | v2 Source | v3 Target |
 |---|---|
-| `Thoughts - ~Generic` | `Template - ~Generic.md` |
+| `Thoughts - ~Generic` | `Thoughts (General).md` |
 | `Thoughts - Book - Quote` | `Template - Book Quote.md` |
 | `Thoughts - Concept - Book` | `Template - Book Concept.md` |
 | `Thoughts - General - Quote` | `Template - General Quote.md` |
@@ -384,12 +430,12 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.3 Beliefs Domain (`Beliefs/Templates/`)
 | v2 Source | v3 Target |
 |---|---|
-| `Beliefs - ~Generic` | `Template - ~Generic.md` |
+| `Beliefs - ~Generic` | `Beliefs (General).md` |
 
 ### 11.4 Information Domain (`Information/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Information - ~Generic` | `Template - ~Generic.md` | |
+| `Information - ~Generic` | `Information (General).md` | |
 | `Information - Academic Paper` | `Template - Academic Paper.md` | |
 | `Information - Blinkist` | `Template - Blinkist.md` | |
 | `Information - Book` | `Template - Book.md` | `source_type: Book` |
@@ -418,7 +464,7 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.5 Interactions Domain (`Interactions/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Interactions - ~Generic` | `Template - ~Generic.md` | |
+| `Interactions - ~Generic` | `Interactions (General).md` | |
 | `Interactions - Amateur Hour` | `Template - Amateur Hour.md` | Personal; author: Geoff |
 | `Interactions - Business Meeting` | `Template - Business Meeting.md` | |
 | `Interactions - Class Lecture` | `Template - Class Lecture.md` | |
@@ -434,7 +480,7 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.6 Memories Domain (`Memories/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Memories - ~Generic` | `Template - ~Generic.md` | |
+| `Memories - ~Generic` | `Memories (General).md` | |
 | `Memories - Family Vacation Trip` | `Template - Family Vacation Trip.md` | |
 | `Memories - Ontology` | `Template - Ontology.md` | |
 | `Memories - PCT Trail Day` | `Template - PCT Trail Day.md` | Personal |
@@ -444,10 +490,10 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.7 Locations Domain (`Locations/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Locations - ~Generic` | `Template - ~Generic.md` | |
+| `Locations - ~Generic` | `Locations (General).md` | |
 | `Locations.template` | Review — likely same as ~Generic; merge if identical |
 
-> ⚠️ OPEN ISSUE (LOC-001): Confirm whether `Locations.template` is functionally identical to `Locations - ~Generic`. If yes, merge into single `Template - ~Generic.md`. If different, create a separate named template.
+> ⚠️ OPEN ISSUE (LOC-001): Confirm whether `Locations.template` is functionally identical to `Locations - ~Generic`. If yes, merge into single `Locations (General).md`. If different, create a separate named template.
 
 ### 11.8 Journals Domain (`Journals/Templates/`)
 | v2 Source | v3 Target | Notes |
@@ -468,7 +514,7 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.10 Projects Domain (`Projects/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| *(none — new)* | `Template - ~Generic Project.md` | New template |
+| *(none — new)* | `Project (General).md` | New template |
 | *(none — new)* | `Template - Active Project.md` | New template |
 | *(none — new)* | `Template - Completed Project.md` | New template |
 
@@ -477,24 +523,24 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.11 Projects/My Writings Domain (`Projects/My Writings/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Syntheses - ~Generic` | `My Writings (Default).md` | "(Default)" postfix is workaround for GH issue #182 |
+| `Syntheses - ~Generic` | `My Writings (General).md` | "(General)" postfix is workaround for GH issue #182 |
 | `Syntheses - Extended Journal Writing` | `Template - Personal Writing.md` | Renamed to avoid confusion with Journals |
 | `Syntheses - Treatise` | `Template - Treatise.md` | |
 | `Project - Code Poetry - Poem` | `Template - Code Poem.md` | Personal |
 | `Syntheses - Quote an Email` | **DELETED** | Per Q2 decision |
 
-> Note: "Default Template" as a plugin feature is not yet implemented (GH issue #182). The `My Writings (Default).md` naming is the current workaround. Once #182 is implemented, rename to `Template - ~Generic.md`.
+> Note: "Default Template" as a plugin feature is not yet implemented (GH issue #182). The `(General)` postfix naming convention is the current workaround across all domains. Once #182 is implemented, the `(General)` postfix can be dropped and templates renamed to plain domain names.
 
 ### 11.12 Entities Domain (`Entities/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| *(none — new)* | `Template - ~Generic Contact.md` | Minimal starting point; full CRM deferred |
+| *(none — new)* | `Contact (General).md` | Minimal starting point; full CRM deferred |
 
 ### 11.13 Body Domain (`Body/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `Body - ~Generic` | `Template - ~Generic.md` | General body/health topic card |
-| `~Partial - Health Log` | `Block - Health Log.block` | Block template (see REQ-BLK-017) |
+| `Body - ~Generic` | `Body (General).md` | General body/health topic card |
+| `~Partial - Health Log` | `Health Log.md` | Block template (see REQ-BLK-017) |
 
 ### 11.14 AI Domain (`AI/Templates/`)
 | v2 Source | v3 Target | Notes |
@@ -506,7 +552,7 @@ File: `Information/Templates/Block - Information - Details.block`
 ### 11.15 System Domain (`System/Templates/`)
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `~System - ~Generic` | `Template - ~Generic.md` | |
+| `~System - ~Generic` | `System (General).md` | |
 | `~System - Testing` | **DROPPED** | Testing artifact, not a real template |
 
 ### 11.16 Root Templates (`Templates/`)
@@ -517,7 +563,7 @@ The root `Templates/` folder is the home for all **cross-domain document templat
 
 | v2 Source | v3 Target | Notes |
 |---|---|---|
-| `~Generic Card Template` | `Template - ~Generic Card.md` | Cross-domain generic card |
+| `~Generic Card Template` | `Card (General).md` | Cross-domain generic card |
 | *(domain-specific variants exist in Thoughts, Information, Memories)* | `Template - Ontology.md` | Cross-domain generic Ontology / Map of Content card |
 
 Additional cross-domain templates will be added to this folder as the library evolves. Candidates to evaluate during Phase 6:
@@ -530,6 +576,7 @@ All `Ideas - *` templates are dropped. Quick idea capture → Daily Journal `## 
 ---
 
 ## 12. Inline `::` Properties and YAML Mirroring
+**Importance:** Medium
 
 - **Preserve in place** — do not remove `::` properties from card bodies
 - **Mirror to YAML** where the field is a likely Dataview or Properties panel query candidate
@@ -538,18 +585,20 @@ All `Ideas - *` templates are dropped. Quick idea capture → Daily Journal `## 
 ---
 
 ## 13. Perspective and Authorship
+**Importance:** High
 
 - **Multi-line vault-owner voice**: `> [!me]` callout block
 - **Inline single-line annotation**: `Me:` prefix
 - **Fixed callout type**: `me` is always the literal string used as callout type (not the user's name)
   - Standardized across all Z2K users; requires a single CSS snippet to style
   - Future: Core Plugin will implement `{{me}}` as a built-in field configurable per user
-- **Root block**: `Templates/Block - Perspective - Me.block` — reusable callout block template
+- **Root block**: `Templates/Perspective - Me.md` — reusable callout block template
 - **Design note**: The long-term debate between `[!me]` (portable) and `[!Geoff]` (identity-expressive) remains a conceptual open question. For v3 implementation: always use `[!me]`.
 
 ---
 
 ## 14. fieldInfo Prompting Strategy
+**Importance:** Critical
 
 - All user-defined fields must have a `{{fieldInfo}}` declaration
 - Declarations may live in domain system-blocks (for shared cross-template fields) or in individual templates
@@ -561,6 +610,7 @@ All `Ideas - *` templates are dropped. Quick idea capture → Daily Journal `## 
 ---
 
 ## 15. Library Version and System Card
+**Importance:** High
 
 - `z2k_creation_library_version: "3.0.0"` in root system-block
 - System card: `System/Z2K Template Library - v3.md` — documents current library release and changelog
@@ -571,15 +621,18 @@ All `Ideas - *` templates are dropped. Quick idea capture → Daily Journal `## 
 ## 16. Supporting Documentation
 
 ### REQ-SUPP-001 — AI Recommendations Document
+**Importance:** Medium
 - File: `AI/Z2K Template Library - AI Recommendations.md`
 - Content: architectural improvement suggestions, patterns observed during migration, future enhancement ideas
 - Created after all templates are complete (Phase 7)
 
 ### REQ-SUPP-002 — Tags Taxonomy Placeholder
+**Importance:** Low
 - Location: `System/` or `Docs/z2k-system-docs/` (determine best location during Phase 7)
 - A placeholder document describing the intent of the taxonomy; actual taxonomy authorship deferred
 
 ### REQ-SUPP-003 — Library Version System Card
+**Importance:** High
 - File: `System/Z2K Template Library - v3.md`
 - Documents library version, creation date, changelog, domain inventory
 
@@ -591,11 +644,11 @@ Explicitly out of scope for this project. Tracked here for archival from Q&A doc
 
 | Item | Q&A Source | Future Action |
 |---|---|---|
-| Full Entities CRM templates (Person, Org, Named Entity) | Arch Q11 | Separate future project; start with ~Generic Contact only |
+| Full Entities CRM templates (Person, Org, Named Entity) | Arch Q11 | Separate future project; start with `Contact (General)` only |
 | AI domain content templates | Arch Q13 | Separate project; AI domain gets system-block only |
 | Tags taxonomy content authorship | Arch Q23 | Only a placeholder in scope |
 | `{{me}}` built-in field | Mig Q5 | Core Plugin feature; for now literal `[!me]` |
-| "Default Template" plugin feature | Mig Q2 | GH issue #182; workaround naming until implemented |
+| "Default Template" plugin feature | Mig Q2 | GH issue #182; `(General)` postfix workaround until implemented; drop postfix once feature ships |
 | Health Log sub-block decomposition | Arch Q14 | Migrate as single block for now; decompose in subsequent session |
 | Generic Daily Log template | Mig Q6 | Current Flame-specific log migrated as-is; generic version created separately by user |
 | My Writings export/publication pipeline | Mig Q2 discussion | Wikilink stripping, versioning, background material — future project |
@@ -610,7 +663,7 @@ Explicitly out of scope for this project. Tracked here for archival from Q&A doc
 ## 18. Sidebar Tasks (non-blocking, execute opportunistically)
 
 - **Verify dot-notation for prompted fields** — test `Fabric.MentalModel` as a `{{fieldInfo}}` target at start of Phase 4 (blocks); file plugin bug if unsupported
-- **Review Locations.template** — confirm whether it is identical to `Locations - ~Generic` before Phase 6; merge or keep separate accordingly
+- **Review Locations.template** — confirm whether it is identical to `Locations - ~Generic` before Phase 6; merge into `Locations (General).md` or keep separate accordingly
 - **Mark personal templates** — ensure all personal-specific templates have `z2k_template_author: "Geoff (z2k-gwp)"` so they are easily identifiable for personal vault migration
 - **Create System library version card** — `System/Z2K Template Library - v3.md` during Phase 7
 
@@ -620,7 +673,6 @@ Explicitly out of scope for this project. Tracked here for archival from Q&A doc
 
 | ID | Description | Blocking |
 |---|---|---|
-| RSB-001 | Confirm `z2k_card_status: Ongoing` stays in root system-block for content files (vs. the template-file status `Template` which is removed) | Phase 2 |
 | DSB-005 | System Block Stop behavior for Projects — may not fully suppress `z2k_*` fields; read System Block Stops doc before implementing Projects system-block | Phase 3 (Projects only) |
 | ST-001 | Source type taxonomy — read Metadata Specification v3.0 before Information domain templates | Phase 6 (Information) |
 | BLK-001 | Fabric.MentalModel dot-notation for prompted fields — untested; test at start of Phase 4; file bug if fails | Phase 4 |
@@ -658,6 +710,11 @@ The following outputs are produced only **after CTLv3 work is complete and valid
 - A new project for building out the Z2K System Architecture documentation.
 - Primary output: Z2K System Documentation (authoritative, v3-complete).
 - Key input items collected in `Post Project/ZSv3 Project/` during this project.
+
+**Template Best Practices Document**
+- A best practices document for template hierarchy and system development, drawn from lessons learned during CTLv3 migration.
+- Intended destination: Z2K Templates Plugin documentation website.
+- Notes and observations collected in `Post Project/Template Best Practices/` during execution.
 
 ---
 

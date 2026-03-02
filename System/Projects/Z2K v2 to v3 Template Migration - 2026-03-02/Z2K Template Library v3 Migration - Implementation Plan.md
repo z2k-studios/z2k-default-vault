@@ -1,8 +1,9 @@
 ---
 document_type: Implementation Plan
-status: Draft
+status: Locked
 ---
 # Implementation Plan — Z2K Template Library v3 Migration
+
 
 ## Overview
 
@@ -21,8 +22,11 @@ For each v2 template:
 4. Add `{{fieldInfo}}` declarations for all user-defined fields
 5. Convert `%% ... %%` comments to `{{! ... }}`
 6. Convert `G:` prefixes to `[!me]` / `Me:`
-7. Replace Card Fabric section with opt-in block comment
-8. Write to target path in `Data/Vaults/z2k-default-vault/`
+7. Replace Card Fabric section with opt-in block comment: `{{! To include Card Fabric: {{> "Card Fabric"}} }}`
+8. **Templater code:** Only replace `<% ... %>` syntax when a clear v3 equivalent exists. Preserve verbatim any code that cannot be cleanly converted; wrap with `{{! FLAGGED: <explanation> }}` and notify the user.
+9. Write to target path in `Data/Vaults/z2k-default-vault/`
+
+> **Note:** Task target filenames follow the no-prefix convention per REQ-NM-001/002. Block templates: `<Name>.md` (no `Block -` prefix). Document templates: `<Name>.md` (no `Template -` prefix). Domain defaults use `<DomainName> (General).md`.
 
 ---
 
@@ -43,6 +47,9 @@ The following reference documents are called out per task. AI agents should read
 | REF-I | `Docs/z2k-design-notes/Z2K System - Design Notes/Z2K Data Architecture/Z2K Metadata/Z2K Metadata Specification - Version 3.0.md` | Phase 6 (Information templates — source types) |
 | REF-J | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/Built-In Helper Functions/Formatting Functions/formatString.md` | Phase 6 (as needed) |
 | REF-K | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/Template Folders/Template Organization.md` | Phase 1 (verify structure) |
+| REF-L | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/Command Queues/Command Queues Overview.md` | Phase 0 (Testing Infrastructure) |
+| REF-M | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/JSON Packages/JSON Packages Overview.md` | Phase 0 (Testing Infrastructure) |
+| REF-N | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/URI Actions/URI Actions.md` | Phase 0 (Testing Infrastructure, URI fallback) |
 
 ---
 
@@ -64,7 +71,7 @@ The following plugin capabilities are required for this project, listed in the o
 | P2 | Dot-notation for prompted fields (`Fabric.MentalModel`) | Phase 4+ | Untested; fallback ready; see BLK-001 |
 | P3 | System Block Stops | Phase 3 (Projects only) | Required for Projects domain suppression |
 | P3 | `z2k_template_suggested_title` YAML expression | Phase 6 | Required for all document templates |
-| P4 | Command Queue / automated testing | Future (TP) | Needed for test automation; prioritize early for TP design |
+| P4 | Command Queue / automated testing | Phase 0 (TP-0.1) | Needed for test automation; validate in Phase 0 |
 
 ### Requirements Priority
 
@@ -103,7 +110,68 @@ Subsequent iterations expand outward using the dependency graph and importance l
 | Dot-notation for prompted fields | Phase 4+ | ❌ | High-risk; see BLK-001 |
 | System Block Stops | Phase 3 (Projects) | ❌ | |
 | `z2k_template_suggested_title` | Phase 6 | ❌ | |
-| Command Queue / automated testing | Future | ❌ | Needed for TP automation |
+| Command Queue / automated testing | Phase 0 (TP-0.1) | ❌ | Primary method for CTL v3 automated testing; validate in Phase 0 |
+
+---
+
+## Phase 0 — Testing Infrastructure Validation
+
+**Goal:** Establish a confirmed, working path for automated template testing before execution begins. Determine whether Command Queues or URIs will serve as the primary mechanism, create the CTL v3 testing vault, and produce a minimal passing end-to-end test.
+
+**Reference docs to read first:** REF-L (Command Queues Overview), REF-M (JSON Packages Overview), REF-N (URI Actions)
+
+**Dependency:** None — can be executed independently; does not require vault structure changes.
+
+**Testing vault:** A new dedicated vault will be created for CTL v3 testing: `Data/Vaults/z2k-testing-vaults/Z2K System Vault Testing/`. This vault is separate from the existing `Templates Test Vault - Primary/` (maintained by another developer — do not modify).
+
+**Testing scripts:** All CTL v3 test scripts live in the project's `Testing/` subfolder:
+`Data/Vaults/z2k-default-vault/System/Projects/Z2K v2 to v3 Template Migration - 2026-03-02/Testing/`
+
+**Two automation mechanisms to evaluate:**
+- **Command Queues** (preferred): Drop `.json`/`.jsonl` files into a watched folder; plugin processes automatically. Enables batch testing.
+- **URI Actions** (fallback): Fire Obsidian URIs from shell scripts; Obsidian must be running. The existing `scripts/run-tests.py` in `z2k-testing-vaults/` uses this approach (read-only reference — do not modify).
+
+### Task TP-0.1 — Create CTL v3 Testing Vault
+
+- **Action:** Create a new Obsidian vault at `Data/Vaults/z2k-testing-vaults/Z2K System Vault Testing/`
+  - Create vault root and `.obsidian/` config directory
+  - Install Z2K Templates Plugin (copy from existing vault's `.obsidian/plugins/z2k-plugin-templates/` or install fresh)
+  - Configure plugin with minimal settings (creator name, templates folder name)
+  - Enable Command Queue: Settings → Z2K Templates → Command Queue Settings
+  - Set queue folder (recommended: `.obsidian/plugins/z2k-plugin-templates/command-queue/`)
+  - Set scan frequency to 10s for fast test turnaround
+- **Acceptance:** Vault opens in Obsidian; Z2K Templates Plugin is active; Command Queue is enabled
+
+> ⚠️ **User assist required at this task:** Opening a new vault in Obsidian and confirming the plugin is active requires user interaction. This is the primary setup gate; all subsequent tasks can be automated.
+
+### Task TP-0.2 — Validate Command Queue with Hello World Test
+
+- **Action:** Write and execute a minimal Command Queue test against a simple inline template
+  - Script location: `Testing/scripts/tp-0-hello-world.py`
+  - Use `templateContents` directive (inline template, no file needed): a trivial template with one field and `{{fieldInfo}}`
+  - JSON package: `{"cmd": "new", "templateContents": "Hello {{Name}}!", "fileTitle": "hello-world-output", "prompt": "none", "finalize": true, "Name": "World"}`
+  - Write to queue folder; trigger "Process Command Queue Now" from Obsidian Command Palette (user-assisted first run)
+  - Verify: output file `hello-world-output.md` created in vault root; command moved to `done/`
+- **Open question:** Determine whether "Process Command Queue Now" can be triggered via URI or external macOS mechanism (AppleScript, `open` command with Obsidian URI) to eliminate manual trigger requirement. Document findings.
+- **Failure path:** If Command Queue fails or cannot be triggered non-interactively, evaluate URI fallback per TP-0.3
+
+### Task TP-0.3 — Evaluate URI Fallback (If Needed)
+
+- **Action:** If TP-0.2 reveals blocking issues, test URI-based triggering as fallback
+  - Build a minimal Python script in `Testing/scripts/` that fires an Obsidian `obsidian://z2k-templates` URI via `subprocess.run(["open", uri])`
+  - Use same hello-world template via `templateContents` + URI `fromJson` command
+  - Wait for output file, assert content matches expected
+- **Skip condition:** Skip if TP-0.2 fully succeeds and Command Queue is confirmed as viable
+
+### Task TP-0.4 — Select Primary Testing Method and Document Findings
+
+- **Action:** Based on TP-0.2 and TP-0.3 results:
+  - Select primary testing method: Command Queue (preferred) or URI (fallback)
+  - Document any plugin bugs → log to `Issues/Z2K Templates Plugin/`
+  - Update Z2K Templates Feature Prioritization table with validated status
+  - Findings feed directly into the Testing Plan (Phase 4 deliverable)
+
+**Phase 0 Acceptance:** New testing vault exists and has Z2K Templates Plugin active with Command Queue enabled. At least one template instantiation test passes end-to-end. Primary testing method confirmed and documented. Testing Plan can now be drafted against a known-working approach.
 
 ---
 
@@ -169,7 +237,7 @@ z2k_creation_template:    "{{wikilink templateName}}"
 z2k_creation_domain:      ".:Z2K/Domain/{{normalizePath destPath}}"  ← REMOVE (unsupported helper)
 z2k_creation_language:    "en"
 z2k_card_build_state:     ".:Z2K/BuildState/Uninitialized"           ← REMOVE
-z2k_card_status:          ".:Z2K/Status/Ongoing"                     ← KEEP (content-file default)
+z2k_card_status:          ".:Z2K/Status/Ongoing"                     ← REMOVE (resolved: no default status value in root system-block)
 z2k_card_source_type:     ".:Z2K/SourceType/Unknown"                 ← KEEP (root default)
 ```
 
@@ -180,14 +248,13 @@ z2k_card_source_type:     ".:Z2K/SourceType/Unknown"                 ← KEEP (r
 - **Changes:**
   - **REMOVE:** `z2k_creation_domain` line (uses unsupported `normalizePath` helper; domain moved to per-domain system-blocks)
   - **REMOVE:** `z2k_card_build_state` line
+  - **REMOVE:** `z2k_card_status` line (resolved: no default status value in root system-block)
   - **ADD:** `z2k_creation_library_version: "3.0.0"` (after `z2k_creation_language`)
   - **ADD:** `{{fieldInfo me value="me"}}` (below the YAML block, in the template body section)
   - **RETAIN:** All other fields unchanged
 - **Reference docs:** REF-B, REF-C, REF-D
 
-> ⚠️ OPEN ISSUE (RSB-001): Confirm that `z2k_card_status: ".:Z2K/Status/Ongoing"` should remain in the root system-block for content files. The decision to remove `z2k_card_status` referred specifically to the `Template` status value in *template files*, not the `Ongoing` default for content files. If `z2k_card_status` should be entirely removed, update this task before execution.
-
-**Acceptance:** Root system-block has no `normalizePath`, no `z2k_card_build_state`, has `z2k_creation_library_version: "3.0.0"`, has `{{fieldInfo me value="me"}}`, and all retained fields are present.
+**Acceptance:** Root system-block has no `normalizePath`, no `z2k_card_build_state`, no `z2k_card_status`, has `z2k_creation_library_version: "3.0.0"`, has `{{fieldInfo me value="me"}}`, and all retained fields are present.
 
 ---
 
@@ -284,7 +351,7 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 **Dependency:** Phase 1 must be complete (root `Templates/` folder must exist).
 
 ### Task 4.1 — Block - Perspective - Me
-- **Target:** `Templates/Block - Perspective - Me.block`
+- **Target:** `Templates/Perspective - Me.md`
 - **Contents:** Standard `[!me]` callout block template — the vault owner's perspective marker
   ```
   > [!me]
@@ -294,7 +361,7 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 - **Ref:** REF-A
 
 ### Task 4.2 — Block - Quotation
-- **Target:** `Templates/Block - Quotation.block`
+- **Target:** `Templates/Quotation.md`
 - **Fields:** `Content.Author`, `Content.Title`, `Content.Text` (attempt dot-notation; fallback flat names if unsupported)
 - **Structure:** Blockquote + attribution line + optional `[!me]` perspective section
 - **Ref:** REF-A, REF-G
@@ -302,13 +369,13 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 > ⚠️ TEST POINT (BLK-004): At the start of this task, test whether `{{fieldInfo Content.Author "Author of the content?"}}` causes the prompt to appear correctly in Obsidian. If dot-notation is unsupported for prompted user fields, use `ContentAuthor`, `ContentTitle`, `ContentText` as flat names and log a plugin bug.
 
 ### Task 4.3 — Block - Citation
-- **Target:** `Templates/Block - Citation.block`
+- **Target:** `Templates/Citation.md`
 - **Fields:** `Content.Author`, `Content.Title`, `Content.Source`, `Content.URL`, `Content.Date` (same namespace as Quotation block)
 - **Note:** Field names must be identical to Quotation block where they overlap, so YAML pre-fill works when inserting either block into the same card
 - **Ref:** REF-A, REF-G
 
 ### Task 4.4 — Block - Card Fabric
-- **Target:** `Templates/Block - Card Fabric.block`
+- **Target:** `Templates/Card Fabric.md`
 - **Fields:** `Fabric.MentalModel`, `Fabric.Contextual`, `Fabric.Reference`, `Fabric.GeoContext`
 - **Structure:** Use `{{formatStringBulletize}}` to conditionally output each section header (section only appears if field has content). Build both a YAML array section and a markdown body section.
 - **Ref:** REF-A, REF-F, REF-G
@@ -322,9 +389,9 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 > ⚠️ TEST POINT (BLK-001): Test dot-notation for `Fabric.MentalModel` as a prompted field (same test as BLK-004 — if Quotation block test already ran, apply result here). If flat names are required, use `FabricMentalModel`, `FabricContextual`, `FabricReference`, `FabricGeoContext`.
 
 ### Task 4.5 — Block - Extended YAML
-- **Target:** `Templates/Block - Extended YAML.block`
+- **Target:** `Templates/Extended YAML.md`
 - **Contents:** Extended set of YAML fields for power users — includes: privacy, project links, structures, ratings arrays, fabric YAML arrays
-- **Usage:** User manually inserts via `{{> "Block - Extended YAML"}}`; never auto-injected
+- **Usage:** User manually inserts via `{{> "Extended YAML"}}`; never auto-injected
 - **Ref:** REF-A, REF-G
 
 **Phase 4 Acceptance:** All 5 block files exist in `Templates/`. Each has `z2k_template_type: block-template`. Quotation and Citation blocks use consistent `Content.*` field names. Card Fabric block uses `{{formatStringBulletize}}` correctly. Dot-notation test result recorded (pass or fail + fallback applied if needed).
@@ -340,39 +407,39 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 **Dependency:** Phase 1 complete (domain `Templates/` folders must exist).
 
 ### Task 5.1 — Block - Podcast Interview Content (Information)
-- **Target:** `Information/Templates/Block - Podcast Interview Content.block`
+- **Target:** `Information/Templates/Podcast Interview Content.md`
 - **Contents:** Core structure for podcast interview cards. Sections: Key Quotes, Key Takeaways, Personal Synthesis, Background/Context, Episode Details. Fields for Interviewer, Interviewee, Episode Title, Date, URL.
-- **Architecture note (Option 3):** This block is included by host-specific templates via `{{> "Block - Podcast Interview Content"}}`. The host-specific template sets fixed field values (host name, show name, default tags) BEFORE the block inclusion. The block itself is generic.
+- **Architecture note (Option 3):** This block is included by host-specific templates via `{{> "Podcast Interview Content"}}`. The host-specific template sets fixed field values (host name, show name, default tags) BEFORE the block inclusion. The block itself is generic.
 - **Source reference:** `Information - Podcast Interview` (v2) for field names and section structure
 - **Ref:** REF-A
 
 ### Task 5.2 — Block - Information - Summary (Information)
-- **Target:** `Information/Templates/Block - Information - Summary.block`
+- **Target:** `Information/Templates/Information - Summary.md`
 - **Contents:** Summary section — one-paragraph abstract of the source content
 
 ### Task 5.3 — Block - Information - Overview (Information)
-- **Target:** `Information/Templates/Block - Information - Overview.block`
+- **Target:** `Information/Templates/Information - Overview.md`
 - **Contents:** Overview section — structured breakdown of main points or chapters
 
 ### Task 5.4 — Block - Information - Synthesis (Information)
-- **Target:** `Information/Templates/Block - Information - Synthesis.block`
+- **Target:** `Information/Templates/Information - Synthesis.md`
 - **Contents:** Personal synthesis section — vault-owner's analysis and takeaways (uses `[!me]` callout)
 
 ### Task 5.5 — Block - Information - Details (Information)
-- **Target:** `Information/Templates/Block - Information - Details.block`
+- **Target:** `Information/Templates/Information - Details.md`
 - **Contents:** Details section — granular notes, highlights, or direct quotes from the source
 
 ### Task 5.6 — Block - Logistics (Interactions)
-- **Target:** `Interactions/Templates/Block - Logistics.block`
+- **Target:** `Interactions/Templates/Logistics.md`
 - **Contents:** When/Where/Who/Recorded fields — standard context section for all interaction cards
 - **Source reference:** `Interactions - Business Meeting` (v2) for logistics section structure
 
 ### Task 5.7 — Block - When Where Who (Memories)
-- **Target:** `Memories/Templates/Block - When Where Who.block`
+- **Target:** `Memories/Templates/When Where Who.md`
 - **Contents:** Date, Location, Who Was Present — context anchor for memory cards
 
 ### Task 5.8 — Block - Health Log (Body)
-- **Target:** `Body/Templates/Block - Health Log.block`
+- **Target:** `Body/Templates/Health Log.md`
 - **Source:** `/Users/gp/Vaults/Z2K (Sync) - Snapshot 2026-02-28/~Templates/~Partial - Health Log.md`
 - **Action:** Migrate as-is; convert v2 syntax to v3; preserve all Flame field names exactly
 - **Note:** All `{{Flame-*}}` field names preserved without change — they correspond to a Google Forms / CSV import automation system. A more generic public version is a future task.
@@ -397,13 +464,20 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 
 ### Task 6.1 — Thoughts Templates (7 templates)
 - **Source files:** `Thoughts - ~Generic`, `Thoughts - Book - Quote`, `Thoughts - Concept - Book`, `Thoughts - General - Quote`, `Thoughts - Ontology`, `Thoughts - Quote a Source`, `Thoughts - Resolutions`
-- **Target:** `Thoughts/Templates/Template - <Name>.md`
+- **Targets:** `Thoughts/Templates/` —
+  - `Thoughts (General).md` ← from `Thoughts - ~Generic`
+  - `Book Quote.md` ← from `Thoughts - Book - Quote`
+  - `Book Concept.md` ← from `Thoughts - Concept - Book`
+  - `General Quote.md` ← from `Thoughts - General - Quote`
+  - `Ontology.md` ← from `Thoughts - Ontology`
+  - `Quote a Source.md` ← from `Thoughts - Quote a Source`
+  - `Resolutions.md` ← from `Thoughts - Resolutions`
 - **Source type:** `.:Z2K/SourceType/InternalThought` for most; `.:Z2K/SourceType/Quotation` for quote templates
 - **Ref:** REF-A, REF-H
 
 ### Task 6.2 — Beliefs Templates (1 template)
 - **Source:** `Beliefs - ~Generic`
-- **Target:** `Beliefs/Templates/Template - ~Generic.md`
+- **Target:** `Beliefs/Templates/Beliefs (General).md`
 - **Source type:** `.:Z2K/SourceType/InternalThought`
 - **Ref:** REF-A, REF-H
 
@@ -411,49 +485,56 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 
 > ⚠️ **PREREQUISITE:** Read REF-I (Metadata Specification v3.0) before this task to confirm canonical `z2k_card_source_type` values. The placeholder values in Requirements §9 may not match v3 canonical names.
 
-- **Generic + academic templates (5):** `Template - ~Generic.md`, `Template - Academic Paper.md`, `Template - Blinkist.md`, `Template - Book.md`, `Template - Kindle Notes.md`
-- **Lecture/Conference/Interview (3):** `Template - Conference.md`, `Template - Lecture.md`, `Template - Interview.md`
-- **Web + Wikipedia (2):** `Template - Web Article.md`, `Template - Wikipedia Entry.md`
-- **Quotation/Email (3):** `Template - Quotation.md`, `Template - Quote a Source.md`, `Template - Quote an Email.md`
-- **Ontology (1):** `Template - Ontology.md`
-- **Podcast — generic (1):** `Template - Podcast Interview.md` (generic template; uses Block - Podcast Interview Content)
-- **Podcast — host-specific (6):** Adam Grant, Dwarkesh Patel, Huberman Lab, Knowledge Project (Shane Parrish), Lex Fridman, Tim Ferriss
+- **Generic + academic templates (5):** `Information (General).md`, `Academic Paper.md`, `Blinkist.md`, `Book.md`, `Kindle Notes.md`
+- **Lecture/Conference/Interview (3):** `Conference.md`, `Lecture.md`, `Interview.md`
+- **Web + Wikipedia (2):** `Web Article.md`, `Wikipedia Entry.md`
+- **Quotation/Email (3):** `Quotation.md`, `Quote a Source.md`, `Quote an Email.md`
+- **Ontology (1):** `Ontology.md`
+- **Podcast — generic (1):** `Podcast Interview.md` (generic template; uses Podcast Interview Content block)
+- **Podcast — host-specific (6):** `Podcast Interview - Adam Grant.md`, `Podcast Interview - Dwarkesh Patel.md`, `Podcast Interview - Huberman Lab.md`, `Podcast Interview - Knowledge Project.md`, `Podcast Interview - Lex Fridman.md`, `Podcast Interview - Tim Ferriss.md`
   - Each presets: `{{fieldInfo Host value="<HostName"}}`, `{{fieldInfo ShowName value="<ShowName>"}}`, default tags
-  - Then includes: `{{> "Block - Podcast Interview Content"}}`
+  - Then includes: `{{> "Podcast Interview Content"}}`
+- All targets in: `Information/Templates/`
 - **Ref:** REF-A, REF-H, REF-I
 
 ### Task 6.4 — Interactions Templates (12 templates)
 
-- **Generic + business (3):** `Template - ~Generic.md`, `Template - Business Meeting.md`, `Template - Email.md`
-- **Class (2):** `Template - Class Lecture.md`, `Template - Class Overview.md`
-- **Conversation (2):** `Template - Conversation.md`, `Template - Email.md`
-- **Personal (6):** `Template - Amateur Hour.md`, `Template - Conversation with Doug.md`, `Template - Conversation with John Kashiwabara.md`, `Template - PoND Conversation with Bryn.md`, `Template - YPO Event.md`, `Template - YPO Forum.md`
+- **Generic + business (3):** `Interactions (General).md`, `Business Meeting.md`, `Email.md`
+- **Class (2):** `Class Lecture.md`, `Class Overview.md`
+- **Conversation (2):** `Conversation.md`
+- **Personal (6):** `Amateur Hour.md`, `Conversation with Doug.md`, `Conversation with John Kashiwabara.md`, `PoND Conversation with Bryn.md`, `YPO Event.md`, `YPO Forum.md`
+- All targets in: `Interactions/Templates/`
   - Personal templates use `z2k_template_author: "Geoff (z2k-gwp)"`
   - Apply correct `z2k_card_privacy` values per Requirements §8
   - Preserve hardcoded personal specifics (names, group details) — these are intentionally personal
-- **Include Logistics block:** All interaction templates should include `{{> "Block - Logistics"}}`
+- **Include Logistics block:** All interaction templates should include `{{> "Logistics"}}`
 - **Ref:** REF-A, REF-H
 
 ### Task 6.5 — Memories Templates (5 templates)
 
 - **Source files:** `Memories - ~Generic`, `Memories - Family Vacation Trip`, `Memories - Ontology`, `Memories - PCT Trail Day`, `Memories - Solo Trip Summary`
-- **Target:** `Memories/Templates/Template - <Name>.md`
+- **Targets:** `Memories/Templates/` —
+  - `Memories (General).md` ← from `Memories - ~Generic`
+  - `Family Vacation Trip.md` ← from `Memories - Family Vacation Trip`
+  - `Ontology.md` ← from `Memories - Ontology`
+  - `PCT Trail Day.md` ← from `Memories - PCT Trail Day`
+  - `Solo Trip Summary.md` ← from `Memories - Solo Trip Summary`
 - **Drop:** `Memories - Quote an Email` (per Q8 decision)
-- **Include When-Where-Who block:** All memory templates include `{{> "Block - When Where Who"}}`
+- **Include When-Where-Who block:** All memory templates include `{{> "When Where Who"}}`
 - **PCT Trail Day:** personal template; preserve hardcoded start mileage and trip context
 - **Ref:** REF-A, REF-H
 
 ### Task 6.6 — Locations Templates (1–2 templates)
 
-> ⚠️ **PREREQUISITE (LOC-001):** Read both `Locations - ~Generic` and `Locations.template` from the v2 source. If they are functionally identical, create one `Template - ~Generic.md`. If different, create appropriately named templates for each.
+> ⚠️ **PREREQUISITE (LOC-001):** Read both `Locations - ~Generic` and `Locations.template` from the v2 source. If they are functionally identical, create one `Locations (General).md`. If different, create appropriately named templates for each.
 
-- **Target:** `Locations/Templates/Template - ~Generic.md` (at minimum)
+- **Target:** `Locations/Templates/Locations (General).md` (at minimum; second template named appropriately if LOC-001 confirms distinct content)
 - **Ref:** REF-A, REF-H
 
 ### Task 6.7 — Journals Templates (2 templates)
 
 - **Source:** `~Journals - Daily`, `~Journals - Yearly Summaries`
-- **Target:** `Journals/Templates/Template - Daily Journal.md`, `Template - Yearly Summary.md`
+- **Targets:** `Journals/Templates/Daily Journal.md`, `Journals/Templates/Yearly Summary.md`
 - **Daily Journal special requirement:** Must include `## Passing Thoughts`, `## Passing Memories`, `## Passing Information` sections. These absorb the retired Ideas domain — passing captures that don't warrant a full card go here.
 - **Privacy:** Journals domain system-block sets `Private/Journal` — no per-template override needed unless specific journal has different privacy
 - **Ref:** REF-A, REF-H
@@ -461,7 +542,8 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 ### Task 6.8 — Logs Templates (6 templates)
 
 - **Source files:** `~Logs - Daily`, `~Logs - Monthly`, `~Logs - Quarterly Focus List`, `~Logs - Weekly`, `~Logs - Yearly`, `~Logs - Yearly Strategic Plan`
-- **Target:** `Logs/Templates/Template - <Name>.md`
+- **Targets:** `Logs/Templates/` —
+  - `Daily Log.md`, `Monthly Log.md`, `Quarterly Focus List.md`, `Weekly Log.md`, `Yearly Log.md`, `Yearly Strategic Plan.md`
 - **Daily Log special requirement:** Preserve all `{{Flame-*}}` field references exactly as-is. These are populated by an external Google Forms / CSV import automation (z2k-sheet-importer plugin). Use `directives="no-prompt"` or leave as plain field references for each Flame field — do NOT prompt the user for them.
 - **Privacy:** Logs domain system-block sets `Private/Log` — no per-template override needed
 - **Ref:** REF-A, REF-H
@@ -469,40 +551,40 @@ Each domain system-block is placed at `Data/Vaults/z2k-default-vault/<Domain>/.s
 ### Task 6.9 — Projects Templates (3 new + 4 My Writings)
 
 **Projects root templates (3 new templates):**
-- `Projects/Templates/Template - ~Generic Project.md`
-- `Projects/Templates/Template - Active Project.md`
-- `Projects/Templates/Template - Completed Project.md`
+- `Projects/Templates/Project (General).md`
+- `Projects/Templates/Active Project.md`
+- `Projects/Templates/Completed Project.md`
 
 These use a **different YAML structure** (no `z2k_*` fields — project-specific metadata only). Design the YAML for project cards: fields like `goal`, `status`, `start_date`, `stakeholders`, `outcomes`. Do not include standard `z2k_metadata_*`, `z2k_creation_*` fields.
 
 > ⚠️ OPEN ISSUE (DSB-005): After executing Task 3.13 (Projects system block + block stop), confirm whether the system-block suppression successfully prevents z2k_* field injection in project subfolder cards. If not, these templates must include YAML that overrides the injected fields. Document findings and implementation approach here.
 
 **My Writings templates (4 templates):**
-- `Projects/My Writings/Templates/My Writings (Default).md` ← from Syntheses - ~Generic
-- `Projects/My Writings/Templates/Template - Personal Writing.md` ← from Syntheses - Extended Journal Writing
-- `Projects/My Writings/Templates/Template - Treatise.md` ← from Syntheses - Treatise
-- `Projects/My Writings/Templates/Template - Code Poem.md` ← from Project - Code Poetry - Poem (personal)
+- `Projects/My Writings/Templates/My Writings (General).md` ← from Syntheses - ~Generic
+- `Projects/My Writings/Templates/Personal Writing.md` ← from Syntheses - Extended Journal Writing
+- `Projects/My Writings/Templates/Treatise.md` ← from Syntheses - Treatise
+- `Projects/My Writings/Templates/Code Poem.md` ← from Project - Code Poetry - Poem (personal)
 
 - **Drop:** `Syntheses - Quote an Email` (per Q2 decision)
-- **"Default" naming note:** `My Writings (Default).md` is the workaround for GH issue #182. Once the "Default Template" feature is implemented in the plugin, rename to `Template - ~Generic.md`.
+- **"(General)" naming note:** `My Writings (General).md` is the workaround for GH issue #182 (Default Template feature). Once that feature ships, the `(General)` postfix can be dropped (tracked as CTLP-004).
 - **Ref:** REF-A, REF-H, REF-E (for block stop behavior)
 
 ### Task 6.10 — Body Templates (1 template + 1 block)
 
-- **Template:** `Body/Templates/Template - ~Generic.md` ← from `Body - ~Generic`
+- **Template:** `Body/Templates/Body (General).md` ← from `Body - ~Generic`
 - **Block:** Done in Phase 5, Task 5.8 — no action needed here
 - **Ref:** REF-A, REF-H
 
 ### Task 6.11 — System Templates (1 template)
 
 - **Source:** `~System - ~Generic`
-- **Target:** `System/Templates/Template - ~Generic.md`
+- **Target:** `System/Templates/System (General).md`
 - **Drop:** `~System - Testing` (testing artifact, not a real template)
 - **Ref:** REF-A, REF-H
 
 ### Task 6.12 — Entities Templates (1 new template)
 
-- **Target:** `Entities/Templates/Template - ~Generic Contact.md` (new — build from scratch)
+- **Target:** `Entities/Templates/Contact (General).md` (new — build from scratch)
 - **Minimal fields:** Name, Role, Organization, Relationship to vault owner, First Met date, Tags, Notes
 - **Note:** Full CRM template set (Person, Organization, Named Entity) is deferred to a future project
 - **Ref:** REF-A, REF-H
@@ -516,11 +598,11 @@ The root `Templates/` folder holds cross-domain document templates usable across
 
 **Current in-scope templates:**
 
-- **`Templates/Template - ~Generic Card.md`** — migrated from `~Generic Card Template` (v2); cross-domain generic card
-- **`Templates/Template - Ontology.md`** — new; cross-domain generic Map of Content / index card (domain-specific variants exist in Thoughts, Information, and Memories; this is the root-level generic applicable to any domain)
+- **`Templates/Card (General).md`** — migrated from `~Generic Card Template` (v2); cross-domain generic card
+- **`Templates/Ontology.md`** — new; cross-domain generic Map of Content / index card (domain-specific variants exist in Thoughts, Information, and Memories; this is the root-level generic applicable to any domain)
 
 **Evaluate during this phase:**
-- `Templates/Template - Quotation.md` — cross-domain generic quote capture. Determine whether domain-specific Quotation variants (Information) are sufficient, or whether a root-level version adds distinct value. Add if yes; skip if redundant.
+- `Templates/Quotation.md` — cross-domain generic quote capture. Determine whether the Information domain `Quotation.md` is sufficient, or whether a root-level version adds distinct value. Add if yes; skip if redundant.
 - Other cross-domain patterns identified during Phase 6 execution — add to this folder if they emerge
 
 - **Ref:** REF-A, REF-H
@@ -566,19 +648,18 @@ The root `Templates/` folder holds cross-domain document templates usable across
 - **File:** `Data/Vaults/z2k-default-vault/System/Z2K v2 to v3 Migration Plan.md`
 - **Action:** Add a note that the plan has been superseded by the formal project documents in the project folder; link to SoW, Requirements, and Implementation Plan. Mark plan status as `completed`.
 
-### Task 8.2 — Archive Q&A Documents
-- **Files:**
-  - `Docs/z2k-design-notes/Z2K System - Design Notes/Design Decisions/Template Migration - v2 to v3 - Open Questions.md`
-  - `Docs/z2k-design-notes/Z2K System - Design Notes/Design Decisions/Template Library - System Architecture - Open Questions.md`
-- **Action:** Add a header note to each: "ARCHIVED — All decisions consolidated into Project Requirements document at `Data/Vaults/z2k-default-vault/System/Projects/Z2K v2 to v3 Template Migration - 2026-03-02/Z2K Template Library v3 Migration - Project Requirements.md`"
-- **Note:** Do not delete — retain as historical record
+### Task 8.2 — Archive Q&A Documents ✅ DONE
+- **Status:** Completed during Phase 2 re-entry (2026-03-02)
+- All 3 Q&A/planning source documents moved to `User Feedback Documentation/Archived/` within the project folder
+- No further action needed
 
 ### Task 8.3 — Update AI Memory File
 - **File:** `/Users/gp/.claude/projects/-Users-gp-Vaults-Z2K-Studios-Workspace/memory/MEMORY.md`
 - **Action:** Update the Z2K Template Library Migration section to reflect project formalization: project documents created, Q&A docs can be archived, Phase 0 fully resolved, ready for execution phases.
 
 ### Task 8.4 — Mark Requirements and Implementation Plan as Locked
-- **Action:** After user review and approval, update `status: Draft` → `status: Locked` in both Requirements and Implementation Plan documents.
+- **Requirements:** ✅ Locked — 2026-03-02
+- **Implementation Plan:** Lock pending (Phase 3 re-entry audit in progress — will be locked when audit completes)
 
 ### Task 8.5 — Verify Out of Scope Tasks Index
 - **Target:** `Out of Scope Tasks/Out of Scope Tasks - Index.md`
@@ -603,7 +684,6 @@ The root `Templates/` folder holds cross-domain document templates usable across
 
 | ID | Issue | Blocking Phase |
 |---|---|---|
-| RSB-001 | Confirm z2k_card_status:Ongoing stays in root system-block | Phase 2 |
 | DSB-005 | Projects system-block stop behavior — read REF-E before executing | Phase 3 (Projects) |
 | ST-001 | Source type taxonomy — read REF-I before Information templates | Phase 6 (Information) |
 | BLK-001/004/005 | Dot-notation for prompted user fields (`Fabric.*`, `Content.*`) — test at Phase 4 start | Phase 4 |
@@ -619,4 +699,4 @@ The root `Templates/` folder holds cross-domain document templates usable across
 - **GH Issue #182 tracking:** "Default Template" plugin feature. Workaround: `My Writings (Default).md` naming. Watch for implementation.
 - **Generic Daily Log:** After migration complete, user will create a more generic public-friendly version of the Daily Log template (current version is Flame/personal-specific)
 - **Personal vault migration:** All templates with `z2k_template_author: "Geoff (z2k-gwp)"` must be manually moved to personal vault before this library is published publicly
-- **Health Log sub-block decomposition:** After v3 migration is complete, revisit `Block - Health Log.block` and decompose into individual sub-blocks composed by a parent block
+- **Health Log sub-block decomposition:** After v3 migration is complete, revisit `Body/Templates/Health Log.md` and decompose into individual sub-blocks composed by a parent block

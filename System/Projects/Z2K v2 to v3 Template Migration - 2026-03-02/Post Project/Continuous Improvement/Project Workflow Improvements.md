@@ -37,3 +37,61 @@ Each entry: **Description** / **Rationale** / **Proposed Implementation**
 **Rationale:** Not all projects benefit from the iterative punch-through model. A simpler, more linear project would be over-engineered by the current IF. Having named variants lets teams select the right model upfront.
 
 **Proposed Implementation:** Create two SoW template variants in ai-context (e.g., `sow-iterative.md` and `sow-linear.md`). Document the trade-offs. Update the `project/create` workflow to ask which IF variant to use.
+
+---
+
+## PWI-004 — Encode Document Requirements for Highly Iterative Projects into Reusable Templates
+
+**Description:** The CTLv3 SoW originally contained a "Document Requirements" section specifying what a highly iterative PRD and IP must contain (importance levels, bootstrapping section, outputs section, bug tracking, prioritization and dependencies, feature prioritization artifact, etc.). These requirements have been fulfilled in this project's PRD and IP. They should be encoded into reusable templates for future projects rather than living in each individual SoW.
+
+**Rationale:** Document requirements captured in a SoW are project-specific and get removed once fulfilled. The same requirements will apply to every highly iterative project. Encoding them in reusable templates (a "highly iterative" PRD template and IP template) means future projects inherit these structural requirements automatically without needing to re-discover or re-specify them.
+
+**Proposed Implementation:**
+1. Create a `prд-iterative-template.md` in ai-context (or equivalent location) pre-seeded with the sections added to this project's PRD: §1.5 Importance Levels schema, §2.5 Bootstrapping, §20 Outputs and Deliverables, §21 Bug and Issue Tracking.
+2. Create an `ip-iterative-template.md` pre-seeded with the Prioritization and Dependencies section (Tooling Priority, Requirements Priority, Z2K Templates Feature Prioritization table, Draft tasks note).
+3. Create a `sow-iterative.md` that references these templates in its Document Requirements section (rather than inlining the requirements).
+4. Update the `project/create` workflow to use these templates when the "Highly Iterative" IF variant is selected (see PWI-003).
+
+---
+
+## PWI-005 — Add Phase Buyoff Table to SoW; Flag Automation Potential per Phase
+
+**Description:** The SoW's Workflow Phases section should include a table listing every IF phase with two additional columns: (1) **Buyoff Giver** — who must approve the phase deliverable (e.g., User, AI, Joint); and (2) **Automation Potential** — whether the phase can be fully executed and validated without user interaction.
+
+The execution and validation phases (Task Execution, Iteration) are candidates for full automation — they could potentially be run end-to-end by an autonomous "Chief" agent without user interaction after the planning phases are approved. The planning and document-review phases (SoW, PRD, IP, TP) require user buyoff and cannot be skipped.
+
+A minimal draft table would look like:
+
+| Phase | Deliverable | Buyoff Giver | Automation Potential |
+|---|---|---|---|
+| Phase 1 — Statement of Work | SoW (Locked) | User | None — human approval required |
+| Phase 2 — Project Requirements | PRD (Locked) | User | None — human approval required |
+| Phase 3 — Implementation Plan | IP (Locked) | User | None — human approval required |
+| Phase 4 — Testing Plan | TP (Locked) | User | None — human approval required |
+| Phase 5 — Task Breakout | Task files + Tracker | Joint | Partial — AI drafts, user reviews |
+| Phase 6 — Task Execution | Completed tasks | AI | High — fully automatable per-task |
+| Phase 7 — Iteration | Revised tasks | AI | High — automatable if criteria are clear |
+| Phase 8 — Celebration | Project closure | User | None — human milestone |
+
+**Rationale:** As AI tooling matures (specifically a "Chief" orchestration tool), Phases 6–7 could be executed autonomously without the user sitting in the loop for each task. Making automation potential explicit in the SoW creates a clear target for future automation investment and signals to the AI which phases require human gatekeeping.
+
+**Proposed Implementation:**
+1. Add the phase buyoff table to the default SoW template under the Workflow Phases section.
+2. Create a "Chief" tool or workflow that can execute a Task Breakout + Task Execution loop autonomously given a locked Testing Plan and Task List.
+3. Update the `project/create` workflow to include guidance on when to engage the Chief tool.
+
+---
+
+## PWI-006 — Embed Traceability Requirements and Rollback Audit Instructions in the Default Testing Plan Template
+
+**Description:** The default Testing Plan template should embed two structural requirements that future projects inherit automatically:
+1. A prominent audit warning at the top of the document stating that any change to the SoW, PRD, or IP requires a full-scale Testing Plan audit before execution resumes — including verification that every PRD requirement and IP task has at least one test assertion mapped to it.
+2. A traceability mechanism in the coverage table: each test row explicitly references the IP task ID(s) and PRD requirement(s) it validates, enabling a simple completeness check (every task ID should appear in at least one row).
+
+**Rationale:** Discovered during CTLv3 Phase 4 (Testing Plan). The initial Testing Plan was organized by test type rather than by task, making coverage impossible to audit without manual cross-referencing. Traceability and rollback audit requirements were added after the fact — they should be structural defaults, not retrofits. The corresponding rollback protocol is captured in the SoW (§4.2 Testing Plan Audit Protocol), which was also added after the fact for the same reason.
+
+**Proposed Implementation:**
+1. Add an `[!WARNING]` callout block at the top of the default Testing Plan template (after the title, before the Overview section) with the audit requirement verbatim.
+2. Add an "IP Task" column and a "PRD Req" column to the coverage table scaffold in the template.
+3. Add a "Coverage Completeness Check" section to the template: a short checklist instructing the author to confirm every IP task ID appears in at least one table row before locking the document.
+4. Add §4.2 (Testing Plan Audit Protocol) to the default SoW template to anchor the cross-document obligation at the framework level.
