@@ -1,0 +1,8 @@
+{
+  "cmd": "new",
+  "templateContents": "Hello {{Name}}!",
+  "fileTitle": "ctlv3-hello-world-test",
+  "prompt": "none",
+  "finalize": true,
+  "Name": "World"
+}

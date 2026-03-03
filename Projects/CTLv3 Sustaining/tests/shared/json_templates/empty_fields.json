@@ -1,0 +1,11 @@
+{
+  "_comment": "Empty/blank field values for boundary testing. Merge into feature-specific packets to verify graceful degradation when fields are missing or blank.",
+  "TextField": "",
+  "NumberField": "",
+  "DateField": "",
+  "DescriptionField": "",
+  "TagsField": "",
+  "NotesField": "",
+  "UrlField": "",
+  "AuthorField": ""
+}

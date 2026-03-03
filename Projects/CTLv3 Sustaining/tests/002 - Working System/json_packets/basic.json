@@ -1,0 +1,12 @@
+{
+  "cmd": "new",
+  "templatePath": "Beliefs/Templates/Beliefs (General).md",
+  "fileTitle": "ctlv3-working-system-test",
+  "destDir": "System/Test Output",
+  "prompt": "none",
+  "finalize": true,
+  "ConciseSummary": "Testing the CTLv3 template rendering pipeline",
+  "OverviewDetails": "This card is created by the CTLv3 Sustaining regression test suite to verify that the full rendering pipeline works end-to-end.",
+  "PrerequisitesForUnderstanding": "CTLv3 template library, Z2K Templates plugin, Command Queue",
+  "FurtherDetails": "If this card appears correctly rendered, Feature 002 has passed."
+}

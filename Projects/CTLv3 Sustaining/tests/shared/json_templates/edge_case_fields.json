@@ -1,0 +1,13 @@
+{
+  "_comment": "Universal edge case field values. Merge into feature-specific packets to test robustness.",
+  "TextField": "Hello \"World\" — it's a test & <more>",
+  "UnicodeField": "Café résumé naïve 日本語 مرحبا",
+  "SpecialCharsField": "C:\\Users\\test\\path (backslash)",
+  "QuotesField": "She said, \"Don't do that.\"",
+  "ApostropheField": "It's working — isn't it?",
+  "NumberAsString": "42",
+  "ZeroField": "0",
+  "NegativeField": "-1",
+  "LongField": "This is a deliberately long field value intended to test line wrapping, truncation behavior, and any field-length assumptions in the template rendering logic. It contains multiple sentences. It keeps going.",
+  "MultilineHint": "Line 1\\nLine 2\\nLine 3"
+}
