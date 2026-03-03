@@ -2,7 +2,7 @@
 task_id: "Task-05"
 ip_tasks: ["3.11"]
 execution_phase: "Phase 3"
-status: "Pending"
+status: "Done"
 domain: "AI"
 parallelizable: true
 parallel_group: "Can run with Tasks 03, 04, 06, 07, 08, 09 after Task 02 is complete"
@@ -40,10 +40,10 @@ The field name/structure for AI authorship perspective is not yet designed. Befo
 
 **Action:** Make a design decision, document the rationale below, then write the file. If the decision requires broader ZSv3 input, file it as an open item in `Post Project/ZSv3 Project/` and proceed with the simplest reasonable choice.
 
-### AI-PERSP Decision (to be filled in when executing)
-> Decision made: ___
-> Rationale: ___
-> Field chosen: ___
+### AI-PERSP Decision
+> Decision made: Use `z2k_creation_perspective: "AI"` in the AI domain system block.
+> Rationale: Metadata Spec v3.0 does not define an AI authorship field. `z2k_creation_perspective` uses the existing `z2k_creation_*` namespace, is minimally invasive, clearly signals AI-originated content, and can be formalized in a future spec revision.
+> Field chosen: `z2k_creation_perspective: "AI"`
 
 ## Minimum Content
 ```yaml

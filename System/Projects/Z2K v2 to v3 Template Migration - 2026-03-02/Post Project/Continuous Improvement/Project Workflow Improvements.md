@@ -108,3 +108,13 @@ A minimal draft table would look like:
 1. Add an `Agent Brief` template to the project/task-breakout library in ai-context, pre-seeded with sections: Project Summary, Key Paths, Critical Constraints, Naming Conventions, Metadata Requirements, Conversion Approach (if applicable), Reference Docs Index, Issue Logging, Status Update Protocol.
 2. Each task file template includes a callout immediately after the title: `> Before executing this task, read \`tasks/Agent Brief.md\` — project-wide paths, constraints, naming conventions, and conversion rules.`
 3. The `project/save` and Phase 5 workflows reference the Agent Brief as a required Phase 5 deliverable alongside the master task tracker.
+
+---
+
+## PWI-008 — Task Acceptance Criteria Should Include Cleanup of Superseded Files
+
+**Description:** When a task produces files that replace existing files (e.g., renaming `Template - Book.md` to `Book.md`), the task's acceptance criteria should explicitly require deletion of the superseded files. Cleanup should not be deferred to a later phase.
+
+**Rationale:** During CTLv3 Phase 6, v3 templates were created alongside old prefixed files in `Information/Templates/`. The old files (`Block - ...`, `Template - ...`) were not deleted during the task that replaced them, leaving 9 stale duplicates that had to be cleaned up in Phase 8. This creates confusion (which file is canonical?) and risks using the wrong version.
+
+**Proposed Implementation:** Add a standard step to the task file template for migration/replacement tasks: "Delete any superseded files that this task's output replaces. Verify no stale duplicates remain in the target folder." The Agent Brief should also include a note: "When a task replaces an existing file with a renamed version, delete the old file as part of the same task."

@@ -1,10 +1,23 @@
 ---
 title: Z2K v2 to v3 Migration Plan
 created: 2026-03-01
-status: in-progress
+status: completed
+completed: 2026-03-02
 ---
 
 # Z2K v2 to v3 Migration Plan
+
+> [!NOTE] Superseded
+> This document has been superseded by the formal project documents created during the Z2K Template Library v3 Migration project. It served as the initial planning artifact and has been archived for historical reference.
+>
+> **Project Documents (source of truth):**
+> - Statement of Work: `Z2K Template Library v3 Migration - Statement of Work.md`
+> - Project Requirements: `Z2K Template Library v3 Migration - Project Requirements.md`
+> - Implementation Plan: `Z2K Template Library v3 Migration - Implementation Plan.md`
+> - Testing Plan: `Z2K Template Library v3 Migration - Testing Plan.md`
+> - Task List and Progress Tracker: `Z2K Template Library v3 Migration - Task List and Progress Tracker.md`
+>
+> All located in: `Data/Vaults/z2k-default-vault/System/Projects/Z2K v2 to v3 Template Migration - 2026-03-02/`
 
 This document is the master reference for migrating the Z2K template library from v2 (Obsidian Templater) to v3 (Z2K Templates Plugin). It is designed to fully reconstruct context in a new chat session — read this file first, then follow the "Session Startup" instructions below.
 

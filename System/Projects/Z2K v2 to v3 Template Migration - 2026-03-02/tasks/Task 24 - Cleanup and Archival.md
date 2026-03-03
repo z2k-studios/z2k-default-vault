@@ -2,7 +2,7 @@
 task_id: "Task-24"
 ip_tasks: ["8.1", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8"]
 execution_phase: "Phase 8"
-status: "Pending"
+status: "Done"
 domain: "Global"
 parallelizable: false
 ---
@@ -21,16 +21,15 @@ Task 8.2 (Archive Q&A Documents) was completed during Phase 2 re-entry on 2026-0
 
 ## Steps
 
+### 8.0 - ASK USER DO THEY WISH TO PROCEED WITH CLEANUP AND ARCHIVAL
+- Before proceeding with cleanup and archival tasks, ask the user if they wish to continue with this final phase of the project. 
+- VERY IMPORTANT - DO NOT PROCEED WITH ANY OF THE STEPS BELOW UNLESS THE USER CONFIRMS THEY WISH TO PROCEED.
+
 ### 8.1 — Update Master Migration Plan
 - **File:** `Data/Vaults/z2k-default-vault/System/Z2K v2 to v3 Migration Plan.md`
 - Add a note that this plan has been superseded by the formal project documents
 - Link to: SoW, Requirements, and Implementation Plan in the project folder
 - Mark plan status as `completed`
-
-### 8.3 — Update AI Memory File
-- **File:** `/Users/gp/.claude/projects/-Users-gp-Vaults-Z2K-Studios-Workspace/memory/MEMORY.md`
-- Update the Z2K Template Library Migration section: remove planning-phase details, record final state (project complete, all phases done, vault location)
-- Remove in-progress details that are no longer relevant
 
 ### 8.4 — Confirm Locked Status on All Core Project Documents
 - SoW: `status: Locked` ✅

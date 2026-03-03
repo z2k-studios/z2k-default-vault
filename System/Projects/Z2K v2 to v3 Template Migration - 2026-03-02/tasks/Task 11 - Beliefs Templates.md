@@ -2,7 +2,7 @@
 task_id: "Task-11"
 ip_tasks: ["6.2"]
 execution_phase: "Phase 6"
-status: "Pending"
+status: "Done"
 domain: "Beliefs"
 parallelizable: true
 parallel_group: "Can run with Tasks 10, 15, 16, 17, 20, 21, 22"

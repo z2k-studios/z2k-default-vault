@@ -2,7 +2,7 @@
 task_id: "Task-06"
 ip_tasks: ["3.13"]
 execution_phase: "Phase 3"
-status: "Pending"
+status: "Done"
 domain: "Projects"
 parallelizable: true
 parallel_group: "Can run with Tasks 03, 04, 05, 07, 08, 09 after Task 02 is complete"
@@ -42,11 +42,11 @@ Write `Projects/.system-block.md` and implement a System Block Stop strategy so 
 4. If complete suppression is NOT achievable, document the limitation and specify what project templates must do to override YAML (relevant to Task 18)
 5. Document findings in this task file under "DSB-005 Resolution"
 
-### DSB-005 Resolution (to be filled in when executing)
-> Strategy chosen: ___
-> Stop file location(s): ___
-> Limitation (if any): ___
-> Impact on Task 18: ___
+### DSB-005 Resolution
+> Strategy chosen: Place `.system-block-stop` in each project subfolder that has its own templates. The stop file reads the subfolder's own `.system-block.md` (if any) but blocks inheritance of the Projects domain system-block and root system-block above it.
+> Stop file location(s): `Projects/My Writings/.system-block-stop` created. Future project subfolders must add their own stop file — convention to be documented in Task 23 (Supporting Documentation).
+> Limitation (if any): Stop files must be created per-project-subfolder, not once at `Projects/`, because a stop at `Projects/` would also block root system-block inheritance for `Projects/Templates/` (the domain's template folder).
+> Impact on Task 18: Projects Templates in `Projects/Templates/` correctly inherit root + Projects domain system-blocks. No special handling needed in Task 18.
 
 ## Projects System-Block Content
 ```yaml

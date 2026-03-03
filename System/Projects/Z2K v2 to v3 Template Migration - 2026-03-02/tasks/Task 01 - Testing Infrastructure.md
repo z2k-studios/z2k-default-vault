@@ -2,7 +2,7 @@
 task_id: "Task-01"
 ip_tasks: ["TP-0.1", "TP-0.2", "TP-0.3", "TP-0.4"]
 execution_phase: "Phase 0"
-status: "Pending"
+status: "Done"
 domain: "Global"
 parallelizable: true
 parallel_group: "Phase 0/1 setup — can run alongside Task 02"

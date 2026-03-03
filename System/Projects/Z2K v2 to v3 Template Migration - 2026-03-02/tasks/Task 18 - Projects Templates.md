@@ -2,7 +2,7 @@
 task_id: "Task-18"
 ip_tasks: ["6.9"]
 execution_phase: "Phase 6"
-status: "Pending"
+status: "Done"
 domain: "Projects"
 parallelizable: true
 parallel_group: "Can run with Tasks 12–17, 19–22 (after Task 06 is complete)"
@@ -34,9 +34,9 @@ Projects root templates use a **different YAML structure** — no `z2k_*` fields
 
 **Context from Task 06 (DSB-005):** After Task 06, review the DSB-005 resolution. If block stop does NOT fully prevent `z2k_*` injection, these templates need explicit YAML that overrides the injected fields. Note this in both Task 06 and here.
 
-### PROJ-YAML Decision (to be filled in when executing)
-> Project YAML fields designed: ___
-> DSB-005 impact on these templates: ___
+### PROJ-YAML Decision
+> Project YAML fields designed: `project_status` (Active/Completed), `project_start_date`, `project_end_date`. Standard v3 template metadata (`z2k_template_type`, `z2k_template_version`, `z2k_template_suggested_title`) retained on all templates — these are template metadata, not card metadata, so they coexist with project-specific fields.
+> DSB-005 impact on these templates: Projects root templates (`Projects/Templates/`) are NOT behind a stop — they correctly inherit the Projects system block (`z2k_creation_domain: ".:Z2K/Domain/Projects"`). My Writings templates (`Projects/My Writings/Templates/`) are behind the `.system-block-stop` at `My Writings/` — system block inheritance is cut; cards created from these templates in My Writings/ will not receive domain injection.
 
 ## Source → Target Mapping
 

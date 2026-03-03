@@ -2,7 +2,7 @@
 task_id: "Task-07"
 ip_tasks: ["4.1", "4.2", "4.3", "4.4", "4.5"]
 execution_phase: "Phase 4"
-status: "Pending"
+status: "Done"
 domain: "Global (root Templates/)"
 parallelizable: true
 parallel_group: "Can run with Tasks 03–06, 08, 09 after Task 02 is complete"
@@ -30,8 +30,8 @@ At the start of Task 4.2 (Quotation block), test whether `{{fieldInfo Content.Au
 - If `{{Content.Author}}` appears verbatim (unfilled) in output → dot-notation is unsupported; use flat names (`ContentAuthor`, `ContentTitle`, etc.) and file a plugin bug in `Issues/Z2K Templates Plugin/`
 
 **Document result here before proceeding:**
-> Dot-notation result: ___
-> Field names to use: ___
+> Dot-notation result: Bare dot-notation (`Content.Author`) fails in `{{fieldInfo}}` (Handlebars parse error). Bracket notation (`[Content.Author]`) works everywhere — fieldInfo, output, prompting. Both approaches are functionally viable.
+> Field names to use: **Flat names** (`ContentAuthor`, `FabricMentalModel`, etc.) — chosen for simplicity and accessibility over bracket dot-notation.
 
 ---
 

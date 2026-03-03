@@ -2,7 +2,7 @@
 task_id: "Task-15"
 ip_tasks: ["6.6"]
 execution_phase: "Phase 6"
-status: "Pending"
+status: "Done"
 domain: "Locations"
 parallelizable: true
 parallel_group: "Can run with Tasks 10, 11, 16, 17, 20, 21, 22"
@@ -34,10 +34,10 @@ Before writing any templates, read **both** v2 source files:
 - If the files are functionally identical → create one `Locations (General).md`
 - If they are substantively different → create appropriately named templates for each distinct use case
 
-### LOC-001 Resolution (to be filled in when executing)
-> Files compared: ___
-> Decision: ___
-> Templates to create: ___
+### LOC-001 Resolution
+> Files compared: `Locations - ~Generic.md` and `Locations.template` — both are byte-for-byte identical in content and structure.
+> Decision: Create one template: `Locations (General).md`
+> Templates to create: `Locations (General).md` only
 
 ## Output Files (minimum)
 

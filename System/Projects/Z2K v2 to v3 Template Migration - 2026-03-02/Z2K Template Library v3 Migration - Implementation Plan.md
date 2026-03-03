@@ -101,16 +101,27 @@ Subsequent iterations expand outward using the dependency graph and importance l
 
 | Plugin Feature | Tasks Requiring It | Validated? | Notes |
 |---|---|---|---|
-| System block YAML injection | Phases 2, 3, all Phase 6 | ❌ | Most critical; first thing to test in Phase 2 |
-| `{{fieldInfo}}` prompting | Phases 4, 5, 6 | ❌ | Test in Phase 4 |
-| `{{wikilink creator/today}}` | Phase 2 | ❌ | |
-| `{{timestamp}}` | Phase 2 | ❌ | |
-| Block partials (`{{> ...}}`) | Phases 4, 5, 6 (blocks) | ❌ | |
-| `{{formatStringBulletize}}` | Phase 4 (Card Fabric) | ❌ | |
-| Dot-notation for prompted fields | Phase 4+ | ❌ | High-risk; see BLK-001 |
-| System Block Stops | Phase 3 (Projects) | ❌ | |
-| `z2k_template_suggested_title` | Phase 6 | ❌ | |
-| Command Queue / automated testing | Phase 0 (TP-0.1) | ❌ | Primary method for CTL v3 automated testing; validate in Phase 0 |
+| System block YAML injection | Phases 2, 3, all Phase 6 | ✅ | Confirmed Task 03; used in all 13 domain system blocks and 67 document templates |
+| `{{fieldInfo}}` prompting | Phases 4, 5, 6 | ✅ | Confirmed Task 07; used across all block and document templates |
+| `{{wikilink creator/today}}` | Phase 2 | ✅ | Confirmed Task 03; works in root system block |
+| `{{timestamp}}` | Phase 2 | ✅ | Confirmed Task 03; works in root system block |
+| Block partials (`{{> ...}}`) | Phases 4, 5, 6 (blocks) | ✅ | Confirmed Tasks 07–09; 13 block templates created and referenced |
+| `{{formatStringBulletize}}` | Phase 4 (Card Fabric) | ✅ | Confirmed Task 07; Card Fabric block working |
+| Dot-notation for prompted fields | Phase 4+ | ❌ | **Unsupported.** BLK-001 filed. Handlebars interprets dots as property access. Workaround: flat field names (`ContentAuthor` instead of `Content.Author`) |
+| System Block Stops | Phase 3 (Projects) | ✅ | Confirmed Task 06; `.system-block-stop` files work for Projects/My Writings isolation |
+| `z2k_template_suggested_title` | Phase 6 | ✅ | Confirmed across all 67 document templates |
+| Command Queue / automated testing | Phase 0 (TP-0.1) | ✅ | Confirmed Task 01; 74 automated tests passing via Command Queue |
+| `{{dateAdd}}` / `{{formatDate}}` | Phase 6 (Journals, Logs) | ✅ | Confirmed Tasks 16–17; date navigation links working with nested subexpressions |
+
+### Feature Prioritization — Handoff Summary
+
+**For the Z2K Templates Plugin developer:**
+
+9 of 10 originally tracked plugin features are validated and working correctly in the CTLv3 template library (80 templates, 74 automated tests). The one failure — **dot-notation for prompted field names** (BLK-001) — is a Handlebars limitation rather than a plugin bug, but supporting escaped or quoted field names (e.g., `{{fieldInfo "Content.Author" "prompt"}}`) would enable cleaner namespacing for complex templates. A workaround (flat names) is in place and does not block any functionality.
+
+One additional feature was discovered and validated during execution: `{{dateAdd}}` and `{{formatDate}}` for date arithmetic in navigation links.
+
+**No blocking bugs were discovered.** The plugin is production-ready for the CTLv3 template library as built. See `Issues/Z2K Templates Plugin/` for the full issue log (1 issue, BLK-001, with workaround).
 
 ---
 

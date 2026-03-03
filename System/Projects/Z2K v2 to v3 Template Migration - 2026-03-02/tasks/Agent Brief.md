@@ -69,7 +69,7 @@ z2k_template_type: block-template
 ```
 
 ### System blocks
-No template metadata — system-blocks contain domain identity fields and domain-specific card metadata only.
+No template metadata — system-blocks contain domain identity fields and domain-specific card metadata only. **System block files MUST use `---` YAML frontmatter delimiters** so their fields merge into the output file's YAML frontmatter. Without delimiters, content is injected as body text.
 
 ---
 
@@ -83,7 +83,7 @@ Apply this sequence to each v2 template:
 4. Add `{{fieldInfo}}` declarations for all user-prompted fields
 5. Convert `%% ... %%` comments → `{{! ... }}`
 6. Convert `G:` / `Geoff:` prefixes → `[!me]` callout with `Me:` label
-7. Replace Card Fabric section with opt-in comment: `{{! To include Card Fabric: {{> "Card Fabric"}} }}`
+7. Replace Card Fabric section with opt-in comment: `{{!-- To include Card Fabric: {{> "Card Fabric"}} --}}` (use `{{!-- --}}` double-dash syntax because the comment contains `{{` and `}}`)
 8. Templater code (`<% ... %>`): replace only when a clear v3 equivalent exists. If not, preserve verbatim and wrap with `{{! FLAGGED: <explanation> }}`
 9. Write to target path in `Data/Vaults/z2k-default-vault/`
 
@@ -109,12 +109,19 @@ Read these on demand as directed by the task file. Do not read all of them upfro
 | REF-L | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/Command Queues/Command Queues Overview.md` | Task 01 |
 | REF-M | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/JSON Packages/JSON Packages Overview.md` | Task 01 |
 | REF-N | `Code/Obsidian Plugins/z2k-plugin-templates/docs/reference-manual/URI, JSON, Command Queues/URI Actions/URI Actions.md` | Task 01 |
+| REF-TP | `<Project folder>/Z2K Template Library v3 Migration - Testing Plan.md` | **All tasks** — validation source of truth |
 
 ---
 
 ## Testing Discipline (Required on Every Task)
 
 Apply this sequence after writing each artifact, before marking the task Done.
+
+### Step 0 — Verify against Testing Plan (REF-TP)
+
+Before writing test assertions, read the relevant section of the Testing Plan (REF-TP) for your task. Your task file contains a transcription of test steps, but the Testing Plan is the **source of truth**. If the task file and Testing Plan disagree, follow the Testing Plan and flag the discrepancy to the user.
+
+Look up your task by its IP task IDs (listed in your task file's frontmatter `ip_tasks` field) in the Testing Plan's coverage tables.
 
 ### Step 1 — Add assertions to the appropriate script
 
@@ -138,11 +145,41 @@ python3 Testing/scripts/test-structure.py
 
 ### Step 3 — Category B tests (template instantiation)
 
-1. Write the JSON command file to `Testing/commands/<phase>/<test-name>.json`
-2. Flag to user: "Please trigger 'Process Command Queue Now' in Obsidian"
-3. After user confirms output: run the test script to poll and assert
-4. First passing run: confirm golden file saved to `Testing/expected/<test-name>/expected.md`
-5. Subsequent runs: script auto-diffs — no user judgment required
+Category B tests instantiate templates via the Command Queue and verify the output. **You have direct filesystem access to both the command queue and the generated output files — do not ask the user to copy/paste results.**
+
+#### How Command Queue testing works
+
+1. **Write a JSON command file** directly to the vault's command queue folder:
+   `Data/Vaults/z2k-default-vault/.obsidian/plugins/z2k-plugin-templates/command-queue/`
+2. **The plugin auto-processes** on a 5-second scan interval. Wait ~8 seconds, then read the output file directly from the vault. No user interaction needed for `prompt: "none"` commands.
+3. **Read the output file** from the vault filesystem. The output location depends on the command:
+   - `templatePath` commands: output goes to the template's domain folder (e.g., `Beliefs/`) or `destDir` if specified
+   - `templateContents` (inline) commands: output goes to the vault root
+4. **Verify the output** by reading the file content and checking YAML fields, body text, etc.
+5. **Clean up** — delete test output files after verification.
+
+#### Important: `templatePath` vs `templateContents`
+
+- **Use `templatePath`** for testing real templates. This resolves the template from disk and **applies system blocks** (root + domain). This is the correct way to test the full system-block → template → output chain.
+- **`templateContents`** (inline templates) do **NOT** apply system blocks. Only use for isolated syntax tests (e.g., testing a specific helper or field behavior).
+
+#### System block requirements
+
+System block files (`.system-block.md`) must have YAML frontmatter delimiters (`---`) for their fields to merge into the output file's YAML. Without delimiters, the content is injected as body text instead of frontmatter.
+
+#### Handlebars comment syntax
+
+Use `{{!-- ... --}}` (double-dash) for comments that contain `{{` or `}}` inside them. The single-form `{{! ... }}` closes at the first `}}`, which causes stray text in output.
+
+#### Test workflow summary
+
+1. Write JSON command file to queue folder
+2. Wait ~8 seconds for auto-processing
+3. Read output file directly from vault
+4. Assert YAML fields, body content, absence of errors
+5. Delete test output file
+6. Save golden file to `Testing/expected/<test-name>/expected.md` on first passing run
+7. Subsequent runs: auto-diff against golden file
 
 ### Script ownership
 

@@ -16,7 +16,7 @@ A bug is only acted upon (submitted/fixed) when it reaches `Identified (Ready to
 
 | ID | Title | Status | Urgency | Component | Scope | File |
 |---|---|---|---|---|---|---|
-| *none yet* | | | | | | |
+| BLK-001 | Dot-notation field names unsupported | Identified (Ready to Submit) | Normal | Template Engine | Prompted field names | `BLK-001 - Dot-notation field names unsupported.md` |
 
 ---
 
