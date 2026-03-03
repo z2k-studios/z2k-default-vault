@@ -1,5 +1,6 @@
 ---
 z2k_template_type: block-template
+z2k_template_author: "Z2K Studios, LLC"
 FabricMentalModel: "{{FabricMentalModel}}"
 FabricContextual: "{{FabricContextual}}"
 FabricReference: "{{FabricReference}}"

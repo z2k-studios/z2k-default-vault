@@ -1,6 +1,7 @@
 ---
 z2k_template_type: document-template
 z2k_template_version: "v3.0.0 2026-03-02"
+z2k_template_author: "Z2K Studios, LLC"
 z2k_template_suggested_title: "Class - {{ClassNum}} - {{ClassSubject}} - Week {{Weeknum}} - {{LectureSubject}}"
 z2k_card_source_type: ".:Z2K/SourceType/ClassLecture"
 z2k_card_privacy: ".:Z2K/Privacy/Quasi-Public/Setting"

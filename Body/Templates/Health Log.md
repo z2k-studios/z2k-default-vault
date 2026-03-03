@@ -1,5 +1,6 @@
 ---
 z2k_template_type: block-template
+z2k_template_author: "Z2K Studios, LLC"
 ---
 {{! Health Log block — migrated from v2 ~Partial - Health Log.md }}
 {{! Data fields populated by Apple Shortcuts / CSV import automation. }}

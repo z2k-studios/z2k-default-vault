@@ -1,5 +1,6 @@
 ---
 z2k_template_type: block-template
+z2k_template_author: "Z2K Studios, LLC"
 ---
 {{fieldInfo Interviewer "Who is the interviewer/host?" type="text"}}
 {{fieldInfo Interviewee "Who is the interviewee/guest?" type="text"}}
