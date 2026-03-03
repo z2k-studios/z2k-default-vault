@@ -95,3 +95,16 @@ A minimal draft table would look like:
 2. Add an "IP Task" column and a "PRD Req" column to the coverage table scaffold in the template.
 3. Add a "Coverage Completeness Check" section to the template: a short checklist instructing the author to confirm every IP task ID appears in at least one table row before locking the document.
 4. Add §4.2 (Testing Plan Audit Protocol) to the default SoW template to anchor the cross-document obligation at the framework level.
+
+---
+
+## PWI-007 — Add Agent Context Brief to Default Task Breakout Phase
+
+**Description:** Every project using a Task Breakout phase should produce an **Agent Context Brief** alongside the individual task files and master tracker. The brief (`tasks/Agent Brief.md`) contains project-wide constants that task files assume but do not repeat: key paths, critical constraints, naming conventions, conversion rules, reference doc index, issue logging, and status update protocol. Each task file should open with a callout directing the agent to read the brief first.
+
+**Rationale:** Discovered during CTLv3 Phase 5. Individual task files are scoped to one task and do not carry global context. A fresh agent lacks: the v2 source path, target vault path, template version string, naming conventions, conversion approach, and the READ-ONLY constraint on source files. Without this, agents must search for context (slow and error-prone) or hallucinate it (dangerous). A co-located brief ensures every execution agent is fully oriented with one additional read before starting any task.
+
+**Proposed Implementation:**
+1. Add an `Agent Brief` template to the project/task-breakout library in ai-context, pre-seeded with sections: Project Summary, Key Paths, Critical Constraints, Naming Conventions, Metadata Requirements, Conversion Approach (if applicable), Reference Docs Index, Issue Logging, Status Update Protocol.
+2. Each task file template includes a callout immediately after the title: `> Before executing this task, read \`tasks/Agent Brief.md\` — project-wide paths, constraints, naming conventions, and conversion rules.`
+3. The `project/save` and Phase 5 workflows reference the Agent Brief as a required Phase 5 deliverable alongside the master task tracker.

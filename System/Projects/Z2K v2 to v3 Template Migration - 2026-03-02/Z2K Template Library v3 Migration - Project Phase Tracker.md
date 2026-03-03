@@ -89,9 +89,24 @@
 
 ---
 
-## Phases 5–8 — Not Yet Started
+## Phase 5 — Task Breakout ✅ LOCKED
+**Status:** Locked — 2026-03-02
 
-**Phase 5:** Task Breakout
+### Completed:
+- Created master Task List and Progress Tracker: `Z2K Template Library v3 Migration - Task List and Progress Tracker.md`
+- Created 24 individual task files in `tasks/` subfolder (Tasks 01–24)
+- Created `tasks/Agent Brief.md` — project-wide context document for fresh execution agents
+- Filed PWI-007 in CI log: add Agent Context Brief to default Task Breakout phase
+- All task files include: Agent Brief callout, frontmatter status, dependencies, references, steps, acceptance criteria, and test validation rows
+- Open issues surfaced in task files: AI-PERSP (Task 05), DSB-005 (Task 06), PROJ-YAML (Task 18), LOC-001 (Task 15)
+
+### Task inventory (Tasks 01–24):
+Tasks 01–09: Infrastructure, system blocks, block templates | Tasks 10–22: Phase 6 document templates by domain | Task 23: Supporting Documentation | Task 24: Cleanup and Archival
+
+---
+
+## Phase 6 — Task Execution (Not Yet Started)
+
 **Phase 6:** Task Execution (Vault Structure → System Blocks → Blocks → Templates → Docs)
 **Phase 7:** Iteration (if needed)
 **Phase 8:** Celebration
