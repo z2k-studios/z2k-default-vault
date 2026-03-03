@@ -17,7 +17,7 @@ from pathlib import Path
 SHARED_DIR = Path(__file__).resolve().parent          # tests/shared/
 TESTS_DIR = SHARED_DIR.parent                         # tests/
 PROJECT_DIR = TESTS_DIR.parent                        # CTLv3 Sustaining/
-VAULT_ROOT = PROJECT_DIR.parent.parent.parent         # z2k-default-vault/
+VAULT_ROOT = PROJECT_DIR.parent.parent / "vaults" / "z2k-ctlv3-basic"  # vaults/z2k-ctlv3-basic/
 
 PLUGIN_DIR = VAULT_ROOT / ".obsidian" / "plugins" / "z2k-plugin-templates"
 COMMAND_QUEUE_DIR = PLUGIN_DIR / "command-queue"

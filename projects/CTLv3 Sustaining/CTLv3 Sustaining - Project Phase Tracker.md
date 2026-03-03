@@ -18,7 +18,7 @@ Per-feature cycle in progress. Features 001–004 and 020 have test suites. Feat
 
 **Next recommended action:** Run the regression to assess the current state, then follow the SoW §4.4 processes (Test Session Initiation, Failure Handling and Fix Process) to resolve any failures.
 ```
-cd "Data/Vaults/z2k-default-vault/System/Projects/CTLv3 Sustaining/tests"
+cd "Data/Vaults/z2k-default-vault/projects/CTLv3 Sustaining/tests"
 python3 run_all_tests.py --feature 001
 ```
 
@@ -138,6 +138,28 @@ The remaining setup work is broken into chunks designed to fit within a single s
 ## Open Items
 
 - The sustaining project template files (in `ai-context/shared/library/project/templates/sustaining/`) are generic versions. The CTLv3-specific project documents in the project folder will diverge significantly from the templates after rewrites — this is expected and correct.
+
+
+## Active Session — 2026-03-03 (CTLv3 #6)
+
+**Session mode:** Maintenance — vault reorganization (no testing)
+**Status:** Reorganization complete. Ready to resume per-feature cycle.
+
+**Vault reorganization performed:**
+- `System/Projects/` moved out to `~/Desktop/CTLv3-Projects-Temp/` → GitHub synced → deletions pushed
+- All vault content moved into `vaults/z2k-ctlv3-basic/` subfolder → GitHub synced
+- CTLv3 Sustaining project moved from temp to `projects/CTLv3 Sustaining/` (repo root, outside vault) → GitHub synced
+- `.obsidian/` moved into `vaults/z2k-ctlv3-basic/`
+- `tests/shared/config.py` VAULT_ROOT updated: now resolves to `vaults/z2k-ctlv3-basic/`
+- SoW and known-projects Primary Project Folder path updated
+
+**Obsidian action required:** Reopen vault pointing to `vaults/z2k-ctlv3-basic/` (not the repo root).
+
+**Next recommended action:** Run the regression to confirm tests still pass with the new paths.
+```
+cd "Data/Vaults/z2k-default-vault/projects/CTLv3 Sustaining/tests"
+python3 run_all_tests.py --feature 001
+```
 
 
 ## Active Session — 2026-03-03 (CTLv3 #5)

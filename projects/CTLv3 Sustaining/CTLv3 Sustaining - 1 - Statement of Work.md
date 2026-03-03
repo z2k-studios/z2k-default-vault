@@ -10,7 +10,7 @@ status: Draft
 
 **Project Name:** CTLv3 Sustaining
 **Owner:** GP
-**Primary Project Folder:** `Data/Vaults/z2k-default-vault/System/Projects/CTLv3 Sustaining/`
+**Primary Project Folder:** `Data/Vaults/z2k-default-vault/projects/CTLv3 Sustaining/`
 **GitHub Repository (if applicable):** None
 **Date Created:** 2026-03-02
 **Status:** Draft
