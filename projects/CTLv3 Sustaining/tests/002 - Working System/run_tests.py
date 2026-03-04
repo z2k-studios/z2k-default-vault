@@ -27,6 +27,7 @@ from config import (
     VAULT_ROOT,
 )
 from output_formatter import FeatureResult, diag, print_fail, print_feature_summary, print_pass, print_skip
+from result_writer import RunResult, write_results
 from test_utils import (
     cleanup_output,
     diff_output,
@@ -50,7 +51,7 @@ BASIC_EXPECTED = EXPECTED_DIR / "basic_expected.md"
 OUTPUT_PATH = VAULT_ROOT / "System" / "Test Output" / "ctlv3-working-system-test.md"
 
 
-def run_tests(result: FeatureResult) -> None:
+def run_tests(result: FeatureResult, run_result: RunResult) -> None:
     # Clean up any leftover output
     cleanup_output(OUTPUT_PATH)
 
@@ -61,11 +62,14 @@ def run_tests(result: FeatureResult) -> None:
     try:
         queued = submit_packet(BASIC_PACKET)
     except Exception as exc:
+        notes = str(exc)
         for req_id in ["002-001", "002-002", "002-003", "002-004", "002-005", "002-006"]:
             print_fail(req_id, f"[blocked by packet submission failure]", "quantitative",
                        expected="Packet submitted",
-                       actual=str(exc))
+                       actual=notes)
             result.failed += 1
+            run_result.add_req(req_id, f"[blocked by packet submission failure]", "FAIL",
+                               notes=f"Blocked: {notes}")
         return
 
     diag(f"  Submitted: {queued.name}")
@@ -74,20 +78,30 @@ def run_tests(result: FeatureResult) -> None:
     # 002-001: Output file appears
     found = wait_for_output(OUTPUT_PATH, timeout=COMMAND_QUEUE_TIMEOUT_SECONDS)
     if not found:
+        notes_001 = f"No output after {COMMAND_QUEUE_TIMEOUT_SECONDS}s"
         print_fail("002-001", "Template renders via templatePath", "quantitative",
                    expected="Output file created within timeout",
-                   actual=f"No output after {COMMAND_QUEUE_TIMEOUT_SECONDS}s")
+                   actual=notes_001)
         result.failed += 1
+        run_result.add_req("002-001", "Template renders via templatePath", "FAIL", notes=notes_001)
         # Remaining tests cannot run without the output file
-        for req_id in ["002-002", "002-003", "002-004", "002-005", "002-006"]:
+        for req_id, desc in [
+            ("002-002", "Root system block YAML injected"),
+            ("002-003", "Domain system block YAML injected"),
+            ("002-004", "Field values resolved"),
+            ("002-005", "Dynamic fields resolve"),
+            ("002-006", "Output matches expected golden file"),
+        ]:
             print_fail(req_id, "[blocked — no output file]", "quantitative",
                        expected="Output file exists",
                        actual="Skipped due to 002-001 failure")
             result.failed += 1
+            run_result.add_req(req_id, desc, "FAIL", notes="Blocked by 002-001 failure (no output file)")
         return
 
     print_pass("002-001", "Template renders via templatePath", "quantitative")
     result.passed += 1
+    run_result.add_req("002-001", "Template renders via templatePath", "PASS")
 
     content = read_output(OUTPUT_PATH)
 
@@ -99,50 +113,62 @@ def run_tests(result: FeatureResult) -> None:
     if has_metadata_version and has_library_version:
         print_pass("002-002", "Root system block YAML injected", "quantitative")
         result.passed += 1
+        run_result.add_req("002-002", "Root system block YAML injected", "PASS")
     else:
         missing = []
         if not has_metadata_version:
             missing.append("z2k_metadata_version (value starting with 3)")
         if not has_library_version:
             missing.append("z2k_creation_library_version: 3.0.0")
+        notes = f"Missing: {', '.join(missing)}"
         print_fail("002-002", "Root system block YAML injected", "quantitative",
                    expected="Both fields present in output",
-                   actual=f"Missing: {', '.join(missing)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req("002-002", "Root system block YAML injected", "FAIL", notes=notes)
 
     # 002-003: Domain system block field
     if "z2k_creation_domain" in content and ".:Z2K/Domain/Beliefs" in content:
         print_pass("002-003", "Domain system block YAML injected", "quantitative")
         result.passed += 1
+        run_result.add_req("002-003", "Domain system block YAML injected", "PASS")
     else:
+        notes = "Field missing or value incorrect"
         print_fail("002-003", "Domain system block YAML injected", "quantitative",
                    expected='z2k_creation_domain: ".:Z2K/Domain/Beliefs"',
-                   actual="Field missing or value incorrect")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req("002-003", "Domain system block YAML injected", "FAIL", notes=notes)
 
     # 002-004: Supplied field values appear in output
     expected_text = "Testing the CTLv3 template rendering pipeline"
     if expected_text in content:
         print_pass("002-004", "Field values resolved", "quantitative")
         result.passed += 1
+        run_result.add_req("002-004", "Field values resolved", "PASS")
     else:
+        notes = f'Text not found: "{expected_text}"'
         print_fail("002-004", "Field values resolved", "quantitative",
                    expected=f'Output contains: "{expected_text}"',
                    actual="Text not found in output")
         result.failed += 1
+        run_result.add_req("002-004", "Field values resolved", "FAIL", notes=notes)
 
     # 002-005: Dynamic fields resolved — no raw Handlebars in output
     if "{{" in content or "}}" in content:
         # Find the raw expressions
         import re
         raw = re.findall(r'\{\{[^}]+\}\}', content)
+        notes = f"Found raw expressions: {raw[:5]}"
         print_fail("002-005", "Dynamic fields resolve", "quantitative",
                    expected="No raw {{...}} expressions in output",
                    actual=f"Found: {raw[:5]}")
         result.failed += 1
+        run_result.add_req("002-005", "Dynamic fields resolve", "FAIL", notes=notes)
     else:
         print_pass("002-005", "Dynamic fields resolve", "quantitative")
         result.passed += 1
+        run_result.add_req("002-005", "Dynamic fields resolve", "PASS")
 
     # 002-006: Diff against golden expected file
     if not BASIC_EXPECTED.exists():
@@ -155,17 +181,22 @@ def run_tests(result: FeatureResult) -> None:
             ),
         )
         result.skipped += 1
+        run_result.add_req("002-006", "Output matches expected golden file", "SKIP",
+                           notes="Golden file not yet created")
     else:
         normalized = normalize_dynamic_fields(content)
         diff = diff_output(normalized, BASIC_EXPECTED)
         if diff:
+            notes = f"{len(diff)} diff line(s)"
             print_fail("002-006", "Output matches expected golden file", "quantitative",
                        expected="Empty diff",
                        actual=f"{len(diff)} diff line(s):\n" + "".join(diff[:20]))
             result.failed += 1
+            run_result.add_req("002-006", "Output matches expected golden file", "FAIL", notes=notes)
         else:
             print_pass("002-006", "Output matches expected golden file", "quantitative")
             result.passed += 1
+            run_result.add_req("002-006", "Output matches expected golden file", "PASS")
 
     # Error log check
     new_entries = get_new_error_log_entries(log_position)
@@ -180,8 +211,10 @@ def run_tests(result: FeatureResult) -> None:
 
 def main() -> int:
     result = FeatureResult(feature_num=FEATURE_NUM, feature_name=FEATURE_NAME)
-    run_tests(result)
+    run_result = RunResult(FEATURE_NUM, FEATURE_NAME)
+    run_tests(result, run_result)
     print_feature_summary(result)
+    write_results(FEATURE_DIR, run_result)
     return 0 if result.failed == 0 else 1
 
 

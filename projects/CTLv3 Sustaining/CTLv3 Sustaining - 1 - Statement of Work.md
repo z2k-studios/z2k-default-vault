@@ -268,6 +268,9 @@ Read the dropped feature description and engage in a back-and-forth discussion w
 - How to know if it is working correctly
 - Context and usage scenarios
 - Potential error states and edge cases
+- Is this a new feature, or is it something to be added to as an additional item to an existing feature? 
+
+Use the `/wf project/plan` to help refine the process.
 
 Store the refined description back into the feature file. Move the file from `drop/` to `features/` with the next available number (respecting the numbering scheme in §4.2). Update the YAML frontmatter.
 

@@ -32,6 +32,7 @@ sys.path.insert(0, str(SHARED_DIR))
 
 from config import VAULT_ROOT
 from output_formatter import FeatureResult, print_fail, print_feature_summary, print_pass
+from result_writer import RunResult, write_results
 
 FEATURE_NUM = "020"
 FEATURE_NAME = "Global Template Quality"
@@ -70,7 +71,6 @@ def find_all_templates() -> dict[Path, str]:
 
 def is_personal(content: str) -> bool:
     return PERSONAL_AUTHOR in content or PERSONAL_AUTHOR_UNQUOTED in content
-
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ def check_handlebars_syntax(content: str) -> list[str]:
     return errors
 
 
-def test_020_001(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_001(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-001"
     desc = "Valid Handlebars syntax"
     violations: list[str] = []
@@ -130,20 +130,23 @@ def test_020_001(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if errors:
             violations.append(f"{rel(path)}: {', '.join(errors)}")
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected="No syntax errors in any template",
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-002: No v2 Templater syntax
 # ---------------------------------------------------------------------------
 
-def test_020_002(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_002(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-002"
     desc = "No v2 Templater syntax"
     violations: list[str] = []
@@ -155,13 +158,16 @@ def test_020_002(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if re.search(r'<%.*?%>', cleaned, re.DOTALL):
             violations.append(rel(path))
     if violations:
+        notes = f"Found in: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="No <% ... %> Templater syntax in any template",
-                   actual=f"Found in: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
@@ -175,7 +181,7 @@ DOCUMENT_REQUIRED_FIELDS = [
 ]
 
 
-def test_020_003(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_003(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-003"
     desc = "Document templates have required YAML metadata"
     violations: list[str] = []
@@ -186,33 +192,25 @@ def test_020_003(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if missing:
             violations.append(f"{rel(path)}: missing {', '.join(missing)}")
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected="All document templates have z2k_template_type, z2k_template_version, z2k_template_suggested_title",
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-004: Block templates have required YAML field
 # ---------------------------------------------------------------------------
 
-def test_020_004(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_004(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-004"
     desc = "Block templates have required YAML metadata"
-    violations: list[str] = []
-    for path, content in all_templates.items():
-        if "z2k_template_type: block-template" not in content:
-            continue
-        if "z2k_template_type: block-template" not in content:
-            violations.append(f"{rel(path)}: missing z2k_template_type: block-template")
-    # Note: this check is degenerate as written; a block-template that lacks the
-    # field would never enter the loop. 020-004 is satisfied structurally by the
-    # type check — what it really validates is that the field isn't misspelled.
-    # A proper check requires reading the YAML frontmatter explicitly.
-    # Improved implementation: verify field is in frontmatter (between first --- delimiters).
     violations = []
     for path, content in all_templates.items():
         lines = content.splitlines()
@@ -225,19 +223,21 @@ def test_020_004(result: FeatureResult, all_templates: dict[Path, str]) -> None:
             continue
         frontmatter = "\n".join(lines[1:close_idx])
         if "z2k_template_type: block-template" in frontmatter:
-            # This is a block template — verify the field is indeed present (it is by definition)
             pass  # Covered by initial scan
         elif "z2k_template_type: document-template" in frontmatter:
             pass  # Document template — not checked here
         # If neither type is found in frontmatter and it's a CTL template, that's a 020-003 issue
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected="All block templates have z2k_template_type: block-template in frontmatter",
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
@@ -248,7 +248,7 @@ CORRECT_AUTHOR = 'z2k_template_author: "Z2K Studios, LLC"'
 CORRECT_AUTHOR_ALT = "z2k_template_author: Z2K Studios, LLC"
 
 
-def test_020_005(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_005(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-005"
     desc = "Template author field correct"
     violations: list[str] = []
@@ -264,20 +264,23 @@ def test_020_005(result: FeatureResult, all_templates: dict[Path, str]) -> None:
             else:
                 violations.append(f"{rel(path)}: field missing")
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected='z2k_template_author: "Z2K Studios, LLC" on all CTL templates',
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-006: Field naming conventions (PascalCase)
 # ---------------------------------------------------------------------------
 
-def test_020_006(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_006(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-006"
     desc = "Field naming conventions followed (PascalCase)"
     violations: list[str] = []
@@ -291,20 +294,23 @@ def test_020_006(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if bad_names:
             violations.append(f"{rel(path)}: {', '.join(set(bad_names))}")
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected="All custom fieldInfo names start with uppercase (PascalCase)",
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-007: Comment syntax — double-dash for comments with {{ or }}
 # ---------------------------------------------------------------------------
 
-def test_020_007(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_007(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-007"
     desc = "Comment syntax correct (double-dash for mustache content)"
     violations: list[str] = []
@@ -320,13 +326,16 @@ def test_020_007(result: FeatureResult, all_templates: dict[Path, str]) -> None:
                 violations.append(f"{rel(path)}:{line_no}")
                 break  # one violation per file is enough
     if violations:
+        notes = f"Single-form comments with mustache content in: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="Comments with {{ or }} use {{!-- --}} form",
-                   actual=f"Single-form comments with mustache content in: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
@@ -336,7 +345,7 @@ def test_020_007(result: FeatureResult, all_templates: dict[Path, str]) -> None:
 COMMENT_LINE_PAT = re.compile(r'^\s*\{\{!(?:--)?.*?(?:--)?}}(\s+)$', re.DOTALL)
 
 
-def test_020_008(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_008(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-008"
     desc = "No trailing spaces on comment-only lines"
     violations: list[str] = []
@@ -348,20 +357,23 @@ def test_020_008(result: FeatureResult, all_templates: dict[Path, str]) -> None:
                 violations.append(f"{rel(path)}:{line_no}")
                 break
     if violations:
+        notes = f"Trailing spaces found in: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="No trailing whitespace on comment-only lines",
-                   actual=f"Trailing spaces found in: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-009: fieldInfo declarations are well-formed
 # ---------------------------------------------------------------------------
 
-def test_020_009(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_009(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-009"
     desc = "All fieldInfo declarations are well-formed"
     violations: list[str] = []
@@ -373,13 +385,16 @@ def test_020_009(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if malformed_pat.search(stripped):
             violations.append(rel(path))
     if violations:
+        notes = f"Malformed fieldInfo in: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="Every {{fieldInfo}} has at least a field name",
-                   actual=f"Malformed fieldInfo in: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
@@ -395,7 +410,7 @@ def build_block_name_set(all_templates: dict[Path, str]) -> set[str]:
     }
 
 
-def test_020_010(result: FeatureResult, all_templates: dict[Path, str], block_names: set[str]) -> None:
+def test_020_010(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str], block_names: set[str]) -> None:
     req_id = "020-010"
     desc = "Block partial references point to existing files"
     violations: list[str] = []
@@ -415,20 +430,23 @@ def test_020_010(result: FeatureResult, all_templates: dict[Path, str], block_na
             if block_name not in block_names:
                 violations.append(f"{rel(path)}: '{{{{> \"{block_name}\"}}}}'")
     if violations:
+        notes = summarize_violations(violations)
         print_fail(req_id, desc, "quantitative",
                    expected="All {{> \"BlockName\"}} references point to existing block templates",
-                   actual=summarize_violations(violations))
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-011: Source type values are canonical
 # ---------------------------------------------------------------------------
 
-def test_020_011(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_011(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-011"
     desc = "Source type values are canonical"
     violations: list[str] = []
@@ -441,20 +459,23 @@ def test_020_011(result: FeatureResult, all_templates: dict[Path, str]) -> None:
         if value not in CANONICAL_SOURCE_TYPES:
             violations.append(f"{rel(path)}: '{value}'")
     if violations:
+        notes = f"Non-canonical values: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected=f"Source type from canonical set: {sorted(CANONICAL_SOURCE_TYPES)}",
-                   actual=f"Non-canonical values: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-012: No duplicate filenames within same Templates/ folder
 # ---------------------------------------------------------------------------
 
-def test_020_012(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_012(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-012"
     desc = "No duplicate template filenames within same Templates/ folder"
     # Group templates by their parent directory
@@ -472,20 +493,23 @@ def test_020_012(result: FeatureResult, all_templates: dict[Path, str]) -> None:
                 violations.append(f"{folder_rel}/{name}")
             seen.add(name)
     if violations:
+        notes = f"Duplicates: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="No duplicate filenames within any Templates/ folder",
-                   actual=f"Duplicates: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
 # 020-013: No personal templates in the vault
 # ---------------------------------------------------------------------------
 
-def test_020_013(result: FeatureResult, all_templates: dict[Path, str]) -> None:
+def test_020_013(result: FeatureResult, run_result: RunResult, all_templates: dict[Path, str]) -> None:
     req_id = "020-013"
     desc = "No personal templates in the CTL vault"
     violations: list[str] = []
@@ -496,13 +520,16 @@ def test_020_013(result: FeatureResult, all_templates: dict[Path, str]) -> None:
             actual_val = m.group(1).strip() if m else "unknown"
             violations.append(f"{rel(path)}: {actual_val!r}")
     if violations:
+        notes = f"Personal-authored templates found: {summarize_violations(violations)}"
         print_fail(req_id, desc, "quantitative",
                    expected="No templates with personal author values in the CTL vault",
-                   actual=f"Personal-authored templates found: {summarize_violations(violations)}")
+                   actual=notes)
         result.failed += 1
+        run_result.add_req(req_id, desc, "FAIL", notes=notes)
     else:
         print_pass(req_id, desc, "quantitative")
         result.passed += 1
+        run_result.add_req(req_id, desc, "PASS")
 
 
 # ---------------------------------------------------------------------------
@@ -511,25 +538,27 @@ def test_020_013(result: FeatureResult, all_templates: dict[Path, str]) -> None:
 
 def main() -> int:
     result = FeatureResult(feature_num=FEATURE_NUM, feature_name=FEATURE_NAME)
+    run_result = RunResult(FEATURE_NUM, FEATURE_NAME)
 
     all_templates = find_all_templates()
     block_names = build_block_name_set(all_templates)
 
-    test_020_001(result, all_templates)
-    test_020_002(result, all_templates)
-    test_020_003(result, all_templates)
-    test_020_004(result, all_templates)
-    test_020_005(result, all_templates)
-    test_020_006(result, all_templates)
-    test_020_007(result, all_templates)
-    test_020_008(result, all_templates)
-    test_020_009(result, all_templates)
-    test_020_010(result, all_templates, block_names)
-    test_020_011(result, all_templates)
-    test_020_012(result, all_templates)
-    test_020_013(result, all_templates)
+    test_020_001(result, run_result, all_templates)
+    test_020_002(result, run_result, all_templates)
+    test_020_003(result, run_result, all_templates)
+    test_020_004(result, run_result, all_templates)
+    test_020_005(result, run_result, all_templates)
+    test_020_006(result, run_result, all_templates)
+    test_020_007(result, run_result, all_templates)
+    test_020_008(result, run_result, all_templates)
+    test_020_009(result, run_result, all_templates)
+    test_020_010(result, run_result, all_templates, block_names)
+    test_020_011(result, run_result, all_templates)
+    test_020_012(result, run_result, all_templates)
+    test_020_013(result, run_result, all_templates)
 
     print_feature_summary(result)
+    write_results(FEATURE_DIR, run_result)
     return 0 if result.failed == 0 else 1
 
 

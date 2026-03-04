@@ -1,0 +1,2 @@
+
+When a new card is created, there should be no blank lines before the statement of the OverviewSummary (or "Description") field. If there are then either system blocks are inserting blank lines, field infos are not clearing themselves, or there's a bug in how the system blocks are being inserted. Or the template itself has a blank line before its overview field. 

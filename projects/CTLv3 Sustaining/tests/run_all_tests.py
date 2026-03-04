@@ -28,7 +28,9 @@ from pathlib import Path
 
 # Add shared/ to path so output_formatter is importable
 TESTS_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = TESTS_DIR.parent
 SHARED_DIR = TESTS_DIR / "shared"
+TABULATE_SCRIPT = PROJECT_DIR / "scripts" / "tabulate-results.py"
 sys.path.insert(0, str(SHARED_DIR))
 
 from output_formatter import (
@@ -169,6 +171,17 @@ def main() -> int:
             return 2
 
     print_regression_summary(summary)
+
+    # Run tabulation script to produce a timestamped summary in test-result-summaries/
+    if TABULATE_SCRIPT.exists():
+        try:
+            subprocess.run(
+                [sys.executable, str(TABULATE_SCRIPT)],
+                check=False,
+            )
+        except Exception as exc:
+            print(f"WARNING: tabulate-results.py failed: {exc}", file=sys.stderr)
+
     return overall_exit
 
 

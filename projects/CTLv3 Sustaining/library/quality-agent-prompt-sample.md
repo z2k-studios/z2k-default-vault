@@ -1,13 +1,48 @@
+You are evaluating a Z2K Templates Handlebars template against the CTLv3 Template Quality Scorecard.
+
+        ## Template Source
+        ```
+        ---
+z2k_template_type: document-template
+z2k_template_version: "v3.0.0 2026-03-02"
+z2k_template_author: "Z2K Studios, LLC"
+z2k_template_suggested_title: "{{ConciseSummary}}"
+z2k_card_source_type: ".:Z2K/SourceType/LifeLessons"
 ---
-Description: Template Quality Scorecard for CTLv3 Sustaining — defines the qualitative assessment criteria used by the AI quality agent. Source of truth for all qualitative scoring. Individual template features reference this scorecard; Feature 900 gates their results.
+{{fieldInfo ConciseSummary "Briefly, what is this belief?" type="text" directives="required"}}
+{{fieldInfo OverviewDetails "Describe this belief in detail" type="text"}}
+{{fieldInfo PrerequisitesForUnderstanding "What do you need to know to understand this?" type="text"}}
+{{fieldInfo FurtherDetails "Any additional details?" type="text"}}
+
+{{ConciseSummary}}
+
+---
+
+# Overview
+{{OverviewDetails}}
+
+# Prerequisites
+{{PrerequisitesForUnderstanding}}
+
+# Details
+{{FurtherDetails}}
+
+{{!-- To include Card Fabric: {{> "Card Fabric"}} --}}
+
+        ```
+
+        ## Quality Scorecard
+        ---
+Description: Template Quality Scorecard for CTLv3 Sustaining — defines the qualitative assessment criteria used by the AI quality agent. Derived from Feature 021 requirements. Source of truth for all qualitative scoring.
 document_type: Template Quality Scorecard
 status: Active
+source_feature: "features/021 - Template Quality Standards.md"
 global_threshold: 70
 ---
 
 # Template Quality Scorecard — CTLv3 Sustaining
 
-This scorecard is used by the AI quality agent during qualitative testing of individual template features. Each individual template feature (100–899) includes a qualitative requirement that invokes the AI agent against this scorecard. Feature 900 (Template Quality Gate) validates that all individual assessments are present, recent, and passing.
+This scorecard is used by the AI quality agent during qualitative testing. Each item maps to a requirement in `features/021 - Template Quality Standards.md`. When the feature requirements change, update this scorecard to match.
 
 The global passing threshold is **70%** (see Testing Plan §3.2.3). A template passes qualitative testing if its weighted score meets or exceeds this threshold. Per-feature overrides are documented in each feature's `test_plan.md`.
 
@@ -246,3 +281,91 @@ Items with weight 0 are inactive — they are not sent to the AI agent and not i
 **Weighted final score** = Σ (item_score_i × weight_i / 100) for all active items (weight > 0)
 
 **Minimum passing score: 70%**
+
+
+        ## Feature Requirements (for context)
+        ---
+feature_number: "021"
+description: "Cross-cutting qualitative quality requirements assessed by AI scorecard agent"
+status: "Describing"
+date_added: "2026-03-02"
+test_folder: "tests/021 - Template Quality Standards/"
+---
+
+# Feature 021 — Template Quality Standards
+
+## Description
+
+This feature defines the qualitative quality requirements that templates are assessed against by the AI quality scorecard agent. These are subjective criteria that cannot be reduced to a deterministic script — they require judgment about readability, documentation quality, complexity showcase, and design consistency.
+
+The Template Quality Scorecard (`CTLv3 Sustaining - Template Quality Scorecard.md`) is derived from these requirements. Each requirement here maps to one or more scorecard items. When the scorecard is updated, these requirements are the source of truth.
+
+The test suite for this feature invokes the AI quality agent against every template and aggregates scores. The global passing threshold is 70%.
+
+
+## Requirements
+
+### 021-001 — Templates are well-documented with comments `[qualitative]`
+
+Templates contain Handlebars comments that explain non-obvious logic, field purposes, and structural choices. Comments are informative, not just section markers.
+
+### 021-002 — Templates are readable in raw Markdown state `[qualitative]`
+
+Templates look clean and organized when viewed as raw Markdown. This includes: consistent indentation, comment break bars between sections, logical grouping of related content, and no visual clutter from dense Handlebars expressions.
+
+### 021-003 — Templates showcase Z2K Templates capabilities `[qualitative]`
+
+Templates use advanced plugin features where appropriate: multi-select fields, conditional rendering with helpers, `formatStringBulletize` for optional sections, system block integration, block partial inclusion. Templates should demonstrate at least one level of complexity beyond the minimum needed, to serve as learning examples.
+
+### 021-004 — Templates are AI-aware `[qualitative]`
+
+Template YAML is structured for AI processing. Field names are descriptive and self-documenting. The YAML schema (inherited from system blocks plus template-specific fields) provides enough context for an AI agent to understand the card's purpose and content without reading the body.
+
+### 021-005 — Templates handle edge cases gracefully `[qualitative]`
+
+Templates degrade gracefully when fields are empty, contain special characters (quotes, backslashes, Unicode), or have unexpected but valid data. Optional sections don't produce empty headers or orphaned formatting when their fields are blank.
+
+### 021-006 — Templates are modular `[qualitative]`
+
+Block insertions can be toggled on/off by removing or commenting out the `{{> "BlockName"}}` call. Templates don't break when an optional block is excluded. The opt-in pattern (`{{!-- To include: {{> "Block"}} --}}`) is used for non-essential blocks.
+
+### 021-007 — Templates support automated data ingestion `[qualitative]`
+
+Templates that are expected to receive data from external automation (especially Logs domain) have fields structured for machine input. `fieldInfo` declarations use `directives="no-prompt"` for automation fields. The JSON packet interface is clean and documented.
+
+### 021-008 — Consistent formatting across templates `[qualitative]`
+
+Templates within the same domain follow a consistent structural pattern: same section ordering, same heading levels, same comment style. Cross-domain consistency is also maintained for shared structural elements (e.g., all templates with `[!me]` sections use the same callout format).
+
+### 021-009 — Block templates document their consumers `[qualitative]`
+
+Block templates include a comment listing which document templates include them via `{{> "BlockName"}}`. This enables impact analysis when a block changes.
+
+### 021-010 — External fields are properly declared `[qualitative]`
+
+Fields that are populated by external automation (e.g., Flame fields in Daily Log) have `{{fieldInfo}}` declarations with appropriate directives (`no-prompt`, `value`, or equivalent) rather than being bare field references with no metadata.
+
+
+        ## Instructions
+
+        Only evaluate the following scorecard items: 021-001, 021-002, 021-003, 021-004, 021-005, 021-006, 021-007, 021-008, 021-009, 021-010. Skip any other items — they are inactive (weight = 0) and must not appear in your output.
+
+        For each active scorecard item, assign a numeric score from 0 to 100 using the rubric
+        defined in the scorecard for that item. Use the anchor values (0, 25, 50, 75, 100) as
+        reference points; intermediate values are permitted. Provide brief notes explaining
+        your score for each item.
+
+        For N/A items (defined per item in the scorecard), assign score = 100 and note the N/A condition.
+
+        Do NOT compute a weighted total — return only the raw per-item scores.
+
+        Return your assessment as a JSON block, and nothing else after it:
+        ```json
+        {
+          "item_results": [
+            {"id": "<scorecard item id>", "score": <0-100>, "notes": "<brief explanation>"},
+            ...
+          ],
+          "suggestions": ["<improvement suggestion>", ...]
+        }
+        ```

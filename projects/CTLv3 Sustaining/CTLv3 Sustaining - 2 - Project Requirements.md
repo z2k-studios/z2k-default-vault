@@ -84,7 +84,8 @@ These IDs are referenced by test plans and test scripts for traceability.
 | Range | Purpose | Count |
 |---|---|---|
 | 001–004 | Infrastructure | 4 features (Infrastructure Test, Working System, Directory Structure, System Blocks) |
-| 020–021 | Cross-cutting quality | 2 features (Global Template Quality [quantitative], Template Quality Standards [qualitative]) |
+| 020 | Cross-cutting quality | 1 feature (Global Template Quality [quantitative]) |
+| 900 | Quality gate | 1 feature (Template Quality Gate — validates all individual template qualitative results are present, recent, and passing) |
 | 040–052 | Domain-level | 13 features (one per CTL domain) |
 | 100–179 | Individual templates | 71 features (one per template file: 58 document + 13 block) |
 
@@ -93,12 +94,12 @@ Total: 90 features.
 
 ## 4. Cross-Cutting Requirements
 
-Cross-cutting requirements are captured in two dedicated features rather than in this document:
+Cross-cutting requirements are captured in dedicated features rather than in this document:
 
-- **Feature 020 — Global Template Quality** — quantitative checks that apply to every template (valid syntax, metadata, naming conventions, field declarations, source type validation, etc.)
-- **Feature 021 — Template Quality Standards** — qualitative criteria assessed by the AI scorecard agent (documentation, readability, capability showcase, modularity, edge case handling, etc.)
+- **Feature 020 — Global Template Quality** — quantitative checks that apply to every template (valid syntax, metadata, naming conventions, field declarations, source type validation, etc.). Its test suite iterates over all templates in the vault.
+- **Feature 900 — Template Quality Gate** — aggregation gate that validates all individual template features (100–899) have recent, passing qualitative results. Does not perform AI assessment itself — each individual template feature owns its own qualitative check against the Template Quality Scorecard.
 
-These features serve as the enforcement layer. Their test suites iterate over all templates in the vault.
+Qualitative assessment (documentation, readability, capability showcase, modularity, edge case handling, etc.) is performed per-template as part of each individual template feature's requirements (e.g., 100-004, 107-004). The Template Quality Scorecard defines the scoring criteria used by the AI quality agent.
 
 
 ## 5. Domain Knowledge

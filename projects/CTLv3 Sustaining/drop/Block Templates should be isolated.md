@@ -1,0 +1,3 @@
+Having the blocks be interspersed with full document templates is actually confusing. It'd be nice if they were segregated out in some way. Can I just put them in a subfolder or do I need to prefix their file names with the word block? Unfortunately, doing the latter is both non-language friendly for foreign languages and it makes the picker dialogue more difficult to use. 
+
+If I end up renaming the templates, then there will be a disconnect in the file name for the features. I'm not sure how that gets resolved in our system. 

@@ -64,14 +64,14 @@ The remaining setup work is broken into chunks designed to fit within a single s
 ### Chunk 2: Mine Migration Project ← DONE
 **Status:** Complete (2026-03-02)
 **What to do:**
-1. Read the migration project at `Data/Vaults/z2k-default-vault/System/Projects/Z2K v2 to v3 Template Migration - 2026-03-02/`
+1. Read the migration project at `~/Desktop/CTLv3-Projects-Temp/Z2K v2 to v3 Template Migration - 2026-03-02/` *(moved from System/Projects/ during 2026-03-03 vault reorg)*
 2. Focus on: PRD (per-template and per-domain requirements, global requirements), Agent Brief (reference docs, agent context), Testing approach (JSON/command queue patterns)
 3. IGNORE: iterative framework process in SoW, old template migration procedures, anything about converting v2→v3
 4. Compile findings into a working document: `User Feedback/Migration Project Mining Results.md`
 5. Extract: list of all templates and their requirements, list of all domains, global system requirements, reference manual pages, testing patterns
 
 **Key context:**
-- Sister project folder: `Data/Vaults/z2k-default-vault/System/Projects/Z2K v2 to v3 Template Migration - 2026-03-02/`
+- Sister project folder: `~/Desktop/CTLv3-Projects-Temp/Z2K v2 to v3 Template Migration - 2026-03-02/` *(moved from System/Projects/ during 2026-03-03 vault reorg)*
 - User feedback: `User Feedback/Initial Setup.md` (Q1 answer specifies what to extract)
 
 ### Chunk 3: Create Feature Files ← DONE
@@ -142,24 +142,44 @@ The remaining setup work is broken into chunks designed to fit within a single s
 
 ## Active Session — 2026-03-03 (CTLv3 #6)
 
-**Session mode:** Maintenance — vault reorganization (no testing)
-**Status:** Reorganization complete. Ready to resume per-feature cycle.
+**Session mode:** Full (quantitative path verification + Feature 021 build + qualitative design)
+**Status:** Feature 021 test suite built. Qualitative scoring redesigned. Full run pending.
 
-**Vault reorganization performed:**
-- `System/Projects/` moved out to `~/Desktop/CTLv3-Projects-Temp/` → GitHub synced → deletions pushed
-- All vault content moved into `vaults/z2k-ctlv3-basic/` subfolder → GitHub synced
-- CTLv3 Sustaining project moved from temp to `projects/CTLv3 Sustaining/` (repo root, outside vault) → GitHub synced
-- `.obsidian/` moved into `vaults/z2k-ctlv3-basic/`
-- `tests/shared/config.py` VAULT_ROOT updated: now resolves to `vaults/z2k-ctlv3-basic/`
-- SoW and known-projects Primary Project Folder path updated
+**Path verification:**
+- Feature 020 run directly: 13/13 PASS — new vault paths confirmed working
+- Feature 001 (hello world): path checks PASS; Command Queue tests FAIL (Obsidian not running — expected)
+- `run_all_tests.py` aborts at Feature 001 due to Obsidian; run features individually for non-Obsidian tests
 
-**Obsidian action required:** Reopen vault pointing to `vaults/z2k-ctlv3-basic/` (not the repo root).
+**Feature 021 built:**
+- `tests/021 - Template Quality Standards/test_plan.md` — created
+- `tests/021 - Template Quality Standards/run_tests.py` — created (weighted aggregation)
 
-**Next recommended action:** Run the regression to confirm tests still pass with the new paths.
+**Quality agent extended (`tests/shared/quality_agent.py`):**
+- Fixed nested session block: unsets `CLAUDECODE` env var before spawning `claude` CLI subprocess
+- Fixed prompt delivery: uses stdin instead of positional arg (safer for large prompts)
+- Upgraded scoring: binary pass/fail → numeric 0–100 per item
+- Added `active_item_ids` parameter: zero-weight items excluded from AI prompt and reporting
+- `score_percent` is now the simple average; weighted total computed by `run_tests.py`
+
+**Scorecard redesigned (`CTLv3 Sustaining - Template Quality Scorecard.md`):**
+- Added detailed 0/25/50/75/100 rubric for each of the 10 items
+- Added weights: 021-001 15%, 002 10%, 003 15%, 004 15%, 005 15%, 006 10%, 007 5%, 008 10%, 009 3%, 010 2%
+- N/A items score 100 (defined per item)
+
+**Library folder:**
+- `library/quality-agent-prompt-sample.md` — sample prompt for Beliefs (General).md (17,400 chars)
+
+**Single-template verification (Beliefs (General).md):**
+- Weighted score: 53.9% (FAIL — expected, this template has known quality gaps)
+- Notable item scores: 021-001 Documentation=20, 021-003 Showcase=30, 021-005 EdgeCases=10
+- N/A correctly handled: 021-007, 021-009, 021-010 all scored 100
+
+**Next recommended action:** Run full quality assessment when ready.
 ```
-cd "Data/Vaults/z2k-default-vault/projects/CTLv3 Sustaining/tests"
-python3 run_all_tests.py --feature 001
+cd "Data/Vaults/z2k-default-vault/Projects/CTLv3 Sustaining/tests"
+python3 "021 - Template Quality Standards/run_tests.py" > /tmp/ctlv3-021-stdout.txt 2> /tmp/ctlv3-021-stderr.txt
 ```
+Then review `/tmp/ctlv3-021-stdout.txt` for per-requirement pass/fail and `/tmp/ctlv3-021-stderr.txt` for per-template scores.
 
 
 ## Active Session — 2026-03-03 (CTLv3 #5)
